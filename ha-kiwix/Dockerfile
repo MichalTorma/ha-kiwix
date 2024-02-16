@@ -1,6 +1,5 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-dockerfile
-ARG ghcr.io/kiwix/kiwix-tools:3.6.0
-FROM $BUILD_FROM
+FROM ghcr.io/kiwix/kiwix-tools:3.6.0
 
 # # Execute during the build of the image
 # ARG TEMPIO_VERSION BUILD_ARCH
