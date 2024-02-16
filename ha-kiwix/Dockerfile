@@ -11,4 +11,4 @@ FROM ghcr.io/kiwix/kiwix-tools:3.6.0
 # COPY rootfs /
 # RUN apk add --no-cache cron
 # RUN echo "0 2 * * * /usr/bin/run_kiwix --update" > /etc/crontabs/root
-CMD ["tail", "-f", \dev\null]
+CMD ["tail", "-f", "/dev/null"]
