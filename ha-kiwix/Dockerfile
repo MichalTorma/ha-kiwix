@@ -1,10 +1,8 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-dockerfile
-ARG BUILD_ARCH
-ARG TEMPIO_VERSION=latest
 FROM ghcr.io/kiwix/kiwix-tools:3.6.0
 
 # # Execute during the build of the image
-# ARG TEMPIO_VERSION BUILD_ARCH
+ARG TEMPIO_VERSION BUILD_ARCH
 RUN apk add --no-cache cronie curl
 RUN \
     curl -sSLf -o /usr/bin/tempio \
