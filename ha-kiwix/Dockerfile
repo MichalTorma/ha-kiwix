@@ -3,6 +3,8 @@ FROM ghcr.io/kiwix/kiwix-tools:3.6.0
 
 # # Execute during the build of the image
 ARG TEMPIO_VERSION BUILD_ARCH
+RUN echo "Downloading tempio version ${TEMPIO_VERSION} for architecture ${BUILD_ARCH}"
+
 RUN apk add --no-cache cronie curl
 RUN \
     curl -sSLf -o /usr/bin/tempio \
