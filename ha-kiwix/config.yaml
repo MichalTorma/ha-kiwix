@@ -12,5 +12,13 @@ arch:
   - amd64
   - i386
 init: false
-map:
-  - share:rw
+ports:
+  8080/tcp: 8080
+ingress: true
+ingress_port: 8080
+options:
+  zim_urls:
+    - "https://dumps.wikimedia.org/other/kiwix/zim/wikipedia/wikipedia_en_100_2024-02.zim"
+schema:
+  zim_urls:
+    - url

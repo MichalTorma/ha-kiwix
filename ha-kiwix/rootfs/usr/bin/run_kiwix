@@ -1,3 +1,44 @@
 #!/bin/bash
 
-echo "All done!" > /share/example_addon_output.txt
+# Define the directory where ZIM files are stored
+ZIM_DIR=/data/zimfiles
+LIBRARY_PATH=/data/library_zim.xml
+
+# Ensure the ZIM files directory exists
+if [ ! -d "${ZIM_DIR}" ]; then
+    echo "${ZIM_DIR} does not exist. Creating it..."
+    # Directly check the command execution
+    if ! mkdir -p "${ZIM_DIR}"; then
+        echo "Failed to create ${ZIM_DIR}. Exiting..."
+        exit 1
+    fi
+fi
+
+# Function to start kiwix-serve with all ZIM files
+start_kiwix_serve() {
+    echo "Starting kiwix-serve with all ZIM files in ${ZIM_DIR}..."
+    # shellcheck disable=SC2046
+    kiwix-serve --library --port=8080 "${LIBRARY_PATH}"
+}
+
+# Function to update ZIM files
+update_zim_files() {
+    echo "Updating ZIM files in ${ZIM_DIR}..."
+    python python /usr/bin/download.py ${LIBRARY_PATH} ${ZIM_DIR}
+    # This could involve downloading new files, checking for updates, etc.
+}
+
+# Parse command line arguments
+case "$1" in
+    --start)
+        update_zim_files
+        start_kiwix_serve
+        ;;
+    --update)
+        update_zim_files
+        ;;
+    *)
+        echo "Usage: $0 {--start|--update}"
+        exit 1
+        ;;
+esac
