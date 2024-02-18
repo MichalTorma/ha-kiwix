@@ -1,7 +1,7 @@
 FROM ghcr.io/hassio-addons/base:15.0.7
 
 # Install dependencies
-RUN apk add --no-cache cronie curl py3-pip \
+RUN apk add --no-cache cronie curl py3-pip
 
 # Install requests
 RUN pip install requests
