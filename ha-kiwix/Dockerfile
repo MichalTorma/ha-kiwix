@@ -29,4 +29,5 @@ EXPOSE 8080
 RUN echo "0 2 * * * /usr/local/bin/kiwix-serve --update" > /etc/crontabs/root
 
 # Define default command
-CMD ["/usr/local/bin/kiwix-serve --start"]
+# CMD ["/usr/local/bin/kiwix-serve --start"]
+CMD ["tail", "-f", "/dev/null"]
