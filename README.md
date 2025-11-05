@@ -75,8 +75,12 @@ For detailed configuration options, see the [DOCS.md](DOCS.md) file.
 ## Access Methods
 
 - **Home Assistant Ingress**: Access via Home Assistant sidebar (port 8111)
+  - **Note**: Kiwix may show unstyled HTML via ingress due to absolute asset paths
+  - For best experience, use direct network access instead
 - **Direct Network Access**: Access via `http://homeassistant-ip:8111` (port 8111)
+  - Recommended for full functionality and proper CSS styling
 - **Management Interface**: Access via `http://homeassistant-ip:8112` (port 8112)
+  - Always use direct network access (not available via ingress)
 
 ## Support
 

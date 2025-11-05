@@ -104,7 +104,8 @@ Popular ZIM file sources:
 
 1. Open Home Assistant
 2. Click on "Kiwix" in the sidebar (if configured)
-3. Kiwix interface will load with all available ZIM files
+3. Kiwix interface will load, but **CSS may not load correctly** due to absolute asset paths
+4. **Recommendation**: Use direct network access for best experience (see below)
 
 ### Via Direct Network Access
 

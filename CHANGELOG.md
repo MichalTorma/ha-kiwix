@@ -5,6 +5,19 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2025-01-XX
+
+### Fixed
+
+- Explicitly set management API to bind to 0.0.0.0 for network access
+- Added better logging for management API accessibility
+- Added note about Kiwix CSS limitations with ingress (absolute paths)
+
+### Known Issues
+
+- Kiwix may show unstyled HTML when accessed via ingress due to absolute asset paths
+- Recommended to use direct network access for best experience: `http://homeassistant-ip:8111`
+
 ## [1.1.0] - 2025-01-XX
 
 ### Changed
