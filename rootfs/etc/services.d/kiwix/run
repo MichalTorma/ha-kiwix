@@ -54,7 +54,9 @@ if bashio::var.true "${ENABLE_MANAGEMENT}"; then
         # Verify it's responding
         if curl -f -s http://localhost:${MANAGEMENT_PORT}/api/zim > /dev/null 2>&1; then
             bashio::log.info "Management API is responding on port ${MANAGEMENT_PORT}"
-            bashio::log.info "Management API accessible at: http://$(hostname -I | awk '{print $1}'):${MANAGEMENT_PORT}"
+            # Get IP address (BusyBox compatible)
+            HA_IP=$(ip route get 1.1.1.1 2>/dev/null | grep -oP 'src \K\S+' || ip addr show | grep 'inet ' | grep -v '127.0.0.1' | head -1 | awk '{print $2}' | cut -d/ -f1 || echo "homeassistant-ip")
+            bashio::log.info "Management API accessible at: http://${HA_IP}:${MANAGEMENT_PORT}"
         else
             bashio::log.warning "Management API started but not responding yet. It may need more time."
             bashio::log.warning "Check if port ${MANAGEMENT_PORT} is exposed in config.yaml ports section"
