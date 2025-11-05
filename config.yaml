@@ -1,6 +1,6 @@
 name: "Kiwix Server"
 description: "Serve offline Wikipedia and other ZIM files with management interface"
-version: "1.0.4"
+version: "1.0.5"
 slug: "kiwix"
 arch:
   - aarch64
@@ -15,14 +15,17 @@ hassio_api: true
 hassio_role: default
 host_network: false
 privileged: []
-# Port mapping: These ports must match the defaults in options below
-# Note: Changing ports in options requires updating this ports section too
+# Port mapping: Exposes container ports to host
+# Format: container_port/tcp: host_port
+# These should match or include the ports configured in options below
 ports:
   8080/tcp: 8080
   8081/tcp: 8081
+  8082/tcp: 8082
 ports_description:
-  8080/tcp: "Kiwix server"
-  8081/tcp: "Management API"
+  8080/tcp: "Kiwix server (default)"
+  8081/tcp: "Management API (default)"
+  8082/tcp: "Management API (alternative port)"
 map:
   - config:rw
   - ssl:ro
@@ -43,6 +46,8 @@ schema:
   enable_management: "bool"
 ingress: true
 ingress_port: 8080
+# Note: ingress_port should match the 'port' option value
+# If you change 'port' in options, update ingress_port to match
 panel_icon: mdi:book-open-variant
 panel_title: "Kiwix"
 
