@@ -47,26 +47,30 @@ RUN \
         apk del .build-deps; \
     fi
 
-# Install Python dependencies for management API
+# Create kiwix user and directories first
 RUN \
-    python3 -m pip install --no-cache-dir --upgrade pip && \
-    pip3 install --no-cache-dir \
+    addgroup -g 1000 kiwix \
+    && adduser -D -s /bin/bash -u 1000 -G kiwix kiwix \
+    && mkdir -p /data/zim \
+    && mkdir -p /var/log/kiwix \
+    && mkdir -p /opt/venv
+
+# Install Python dependencies for management API in virtual environment
+RUN \
+    python3 -m venv /opt/venv && \
+    . /opt/venv/bin/activate && \
+    pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir \
         fastapi==0.104.1 \
         uvicorn[standard]==0.24.0 \
         python-multipart==0.0.6 \
         aiofiles==23.2.1
 
-# Create kiwix user and directories
-RUN \
-    addgroup -g 1000 kiwix \
-    && adduser -D -s /bin/bash -u 1000 -G kiwix kiwix \
-    && mkdir -p /data/zim \
-    && mkdir -p /var/log/kiwix
-
 # Set permissions
 RUN \
     chown -R kiwix:kiwix /data \
     && chown -R kiwix:kiwix /var/log/kiwix \
+    && chown -R kiwix:kiwix /opt/venv \
     && chmod -R g+w /data
 
 # Copy rootfs

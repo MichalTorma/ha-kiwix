@@ -30,7 +30,7 @@ if bashio::var.true "${ENABLE_MANAGEMENT}"; then
     bashio::log.info "Starting management API on port ${MANAGEMENT_PORT}..."
     export ZIM_STORAGE_PATH="${ZIM_STORAGE_PATH}"
     export MAX_UPLOAD_SIZE=$(bashio::config 'max_upload_size')
-    nohup python3 /usr/local/bin/kiwix-manager.py \
+    nohup /opt/venv/bin/python /usr/local/bin/kiwix-manager.py \
         --port ${MANAGEMENT_PORT} \
         --storage-path "${ZIM_STORAGE_PATH}" \
         --max-upload-size ${MAX_UPLOAD_SIZE} \
