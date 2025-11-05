@@ -5,6 +5,14 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.3] - 2025-01-XX
+
+### Fixed
+
+- Fixed grep command error (removed Perl regex -P flag for BusyBox compatibility)
+- Improved IP address detection using BusyBox-compatible commands
+- Added reminder about enabling ports in add-on Network settings
+
 ## [1.1.2] - 2025-01-XX
 
 ### Fixed

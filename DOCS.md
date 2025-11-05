@@ -181,6 +181,9 @@ For external access, configure port forwarding:
 - Check that port 8112 is not in use
 - Verify `enable_management` is set to `true`
 - Check add-on logs for management API errors
+- **IMPORTANT**: Ensure port 8112 is enabled in the add-on's **Network** settings tab
+  - Go to add-on → Network tab → Enable port 8112/tcp
+- Verify the port is exposed: `nc -zv homeassistant-ip 8112`
 
 **3. ZIM files not appearing**
 - Verify files are in the correct directory (check `zim_storage_path`)
