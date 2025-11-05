@@ -1,6 +1,6 @@
 name: "Kiwix Server"
 description: "Serve offline Wikipedia and other ZIM files with management interface"
-version: "1.0.2"
+version: "1.0.4"
 slug: "kiwix"
 arch:
   - aarch64
@@ -15,6 +15,8 @@ hassio_api: true
 hassio_role: default
 host_network: false
 privileged: []
+# Port mapping: These ports must match the defaults in options below
+# Note: Changing ports in options requires updating this ports section too
 ports:
   8080/tcp: 8080
   8081/tcp: 8081

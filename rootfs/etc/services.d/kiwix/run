@@ -42,11 +42,18 @@ if bashio::var.true "${ENABLE_MANAGEMENT}"; then
     echo ${MANAGEMENT_PID} > /tmp/kiwix-manager.pid
     
     # Wait a moment for management API to start
-    sleep 2
+    sleep 3
     
     # Check if management API is still running
     if ! kill -0 ${MANAGEMENT_PID} 2>/dev/null; then
-        bashio::log.warning "Management API may have failed to start"
+        bashio::log.error "Management API failed to start!"
+    else
+        # Verify it's responding
+        if curl -f -s http://localhost:${MANAGEMENT_PORT}/api/zim > /dev/null 2>&1; then
+            bashio::log.info "Management API is responding on port ${MANAGEMENT_PORT}"
+        else
+            bashio::log.warning "Management API started but not responding yet. It may need more time."
+        fi
     fi
 fi
 
