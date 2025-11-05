@@ -15,8 +15,8 @@ A Kiwix server for serving offline Wikipedia and other ZIM files with a built-in
 Add-on configuration:
 
 ```yaml
-port: 8080
-management_port: 8081
+port: 8111
+management_port: 8112
 zim_storage_path: "/data/zim"
 log_level: "info"
 max_upload_size: 10000
@@ -27,11 +27,11 @@ enable_management: true
 
 #### Server Configuration
 
-- **port**: Port for the Kiwix server (default: `8080`)
+- **port**: Port for the Kiwix server (default: `8111`)
   - This is the port where Kiwix serves ZIM files
   - Accessible via Home Assistant ingress and direct network access
 
-- **management_port**: Port for the management API (default: `8081`)
+- **management_port**: Port for the management API (default: `8112`)
   - This is the port for the web-based management interface
   - Use this to download, upload, and manage ZIM files
 
@@ -59,7 +59,7 @@ enable_management: true
 
 ## Using the Management Interface
 
-The management interface is available at `http://homeassistant-ip:8081` when the add-on is running.
+The management interface is available at `http://homeassistant-ip:8112` when the add-on is running.
 
 ### Features
 
@@ -70,7 +70,7 @@ The management interface is available at `http://homeassistant-ip:8081` when the
 
 ### Downloading ZIM Files
 
-1. Access the management interface at `http://homeassistant-ip:8081`
+1. Access the management interface at `http://homeassistant-ip:8112`
 2. Enter the URL of a ZIM file in the "Download ZIM File from URL" section
 3. Click "Download"
 4. Monitor progress in the progress bar
@@ -83,7 +83,7 @@ Popular ZIM file sources:
 
 ### Uploading ZIM Files
 
-1. Access the management interface at `http://homeassistant-ip:8081`
+1. Access the management interface at `http://homeassistant-ip:8112`
 2. Click "Choose File" in the "Upload ZIM File" section
 3. Select a `.zim` file from your computer
 4. Click "Upload"
@@ -92,7 +92,7 @@ Popular ZIM file sources:
 
 ### Deleting ZIM Files
 
-1. Access the management interface at `http://homeassistant-ip:8081`
+1. Access the management interface at `http://homeassistant-ip:8112`
 2. Find the ZIM file you want to delete in the list
 3. Click the "Delete" button
 4. Confirm the deletion
@@ -109,7 +109,7 @@ Popular ZIM file sources:
 ### Via Direct Network Access
 
 1. Open a web browser
-2. Navigate to `http://homeassistant-ip:8080`
+2. Navigate to `http://homeassistant-ip:8111`
 3. Kiwix interface will load with all available ZIM files
 
 ### Using ZIM Files
@@ -148,8 +148,8 @@ Visit [kiwix.org](https://www.kiwix.org/en/downloads/) for a complete list.
 
 The add-on uses two ports:
 
-- **8080/tcp**: Kiwix server (content serving)
-- **8081/tcp**: Management API (file management)
+- **8111/tcp**: Kiwix server (content serving)
+- **8112/tcp**: Management API (file management)
 
 Both ports are exposed and can be accessed from your local network.
 
@@ -157,27 +157,27 @@ Both ports are exposed and can be accessed from your local network.
 
 If you want external access:
 
-1. **Allow inbound TCP traffic** on port 8080 (Kiwix server)
-2. **Allow inbound TCP traffic** on port 8081 (Management interface, optional)
+1. **Allow inbound TCP traffic** on port 8111 (Kiwix server)
+2. **Allow inbound TCP traffic** on port 8112 (Management interface, optional)
 
 ### Router Configuration
 
 For external access, configure port forwarding:
 
-- Forward external port → 8080 (Kiwix server)
-- Forward external port → 8081 (Management, optional)
+- Forward external port → 8111 (Kiwix server)
+- Forward external port → 8112 (Management, optional)
 
 ## Troubleshooting
 
 ### Common Issues
 
 **1. Kiwix server not starting**
-- Check that port 8080 is not in use by another service
+- Check that port 8111 is not in use by another service
 - Verify ZIM storage path is writable
 - Check add-on logs for error messages
 
 **2. Management interface not accessible**
-- Check that port 8081 is not in use
+- Check that port 8112 is not in use
 - Verify `enable_management` is set to `true`
 - Check add-on logs for management API errors
 
@@ -244,7 +244,7 @@ To manually check ZIM files:
 
 - **Local Network Only**: By default, accessible only on local network
 - **External Access**: If exposing externally, consider firewall rules
-- **Management Interface**: The management interface (port 8081) should ideally be restricted to local network
+- **Management Interface**: The management interface (port 8112) should ideally be restricted to local network
 
 ### File Security
 

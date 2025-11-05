@@ -34,16 +34,16 @@ Kiwix is an offline reader for web content, designed to make Wikipedia and other
 
 1. Configure the add-on according to your needs (see Configuration section).
 2. Start the add-on.
-3. Access Kiwix through Home Assistant sidebar (ingress) or directly via `http://homeassistant-ip:8080`.
-4. Access the management interface via `http://homeassistant-ip:8081` to add ZIM files.
+3. Access Kiwix through Home Assistant sidebar (ingress) or directly via `http://homeassistant-ip:8111`.
+4. Access the management interface via `http://homeassistant-ip:8112` to add ZIM files.
 
 ### Basic Configuration
 
 The default configuration works out of the box:
 
 ```yaml
-port: 8080
-management_port: 8081
+port: 8111
+management_port: 8112
 zim_storage_path: "/data/zim"
 log_level: "info"
 max_upload_size: 10000
@@ -74,9 +74,9 @@ For detailed configuration options, see the [DOCS.md](DOCS.md) file.
 
 ## Access Methods
 
-- **Home Assistant Ingress**: Access via Home Assistant sidebar (port 8080)
-- **Direct Network Access**: Access via `http://homeassistant-ip:8080` (port 8080)
-- **Management Interface**: Access via `http://homeassistant-ip:8081` (port 8081)
+- **Home Assistant Ingress**: Access via Home Assistant sidebar (port 8111)
+- **Direct Network Access**: Access via `http://homeassistant-ip:8111` (port 8111)
+- **Management Interface**: Access via `http://homeassistant-ip:8112` (port 8112)
 
 ## Support
 

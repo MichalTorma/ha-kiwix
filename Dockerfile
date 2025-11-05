@@ -112,12 +112,12 @@ LABEL \
     org.opencontainers.image.version=${BUILD_VERSION}
 
 # Expose ports
-EXPOSE 8080 8081
+EXPOSE 8111 8112
 
 # Set working directory
 WORKDIR /data
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:8080 || exit 1
+    CMD curl -f http://localhost:8111 || exit 1
 

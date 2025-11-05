@@ -5,6 +5,16 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-01-XX
+
+### Changed
+
+- **BREAKING**: Changed default ports from 8080/8081 to 8111/8112
+  - Kiwix server default port: 8111
+  - Management API default port: 8112
+  - Updated ingress_port to match new default (8111)
+- Simplified port configuration - removed alternative port mappings
+
 ## [1.0.6] - 2025-01-XX
 
 ### Fixed
@@ -77,8 +87,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Features
 
-- **Kiwix Server**: Runs on port 8080 with `--library` and `--monitorLibrary` options
-- **Management API**: FastAPI-based REST API on port 8081
+- **Kiwix Server**: Runs on port 8111 with `--library` and `--monitorLibrary` options
+- **Management API**: FastAPI-based REST API on port 8112
 - **Management UI**: Modern web interface for managing ZIM files
 - **Progress Tracking**: Real-time progress for downloads and uploads
 - **Auto-Detection**: Automatically detects new/removed ZIM files without restart

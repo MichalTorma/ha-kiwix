@@ -63,7 +63,7 @@ bashio::log.info "Kiwix will serve ZIM files from: ${ZIM_STORAGE_PATH}"
 bashio::log.info "Using --library and --monitorLibrary for automatic ZIM file detection"
 
 # Check if ingress is enabled and if we need to handle port mismatch
-INGRESS_PORT=8080
+INGRESS_PORT=8111
 if [[ "${PORT}" != "${INGRESS_PORT}" ]]; then
     bashio::log.warning "Kiwix configured on port ${PORT}, but ingress expects port ${INGRESS_PORT}"
     bashio::log.warning "Ingress will not work. Use direct access: http://homeassistant-ip:${PORT}"

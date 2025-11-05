@@ -684,7 +684,7 @@ async def get_zim_file_info(filename: str):
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(description="Kiwix Management API")
-    parser.add_argument("--port", type=int, default=8081, help="Port to listen on")
+    parser.add_argument("--port", type=int, default=8112, help="Port to listen on")
     parser.add_argument("--storage-path", type=str, required=True, help="Path to ZIM storage directory")
     parser.add_argument("--max-upload-size", type=int, default=10000, help="Maximum upload size in MB")
     parser.add_argument("--host", type=str, default="0.0.0.0", help="Host to bind to")

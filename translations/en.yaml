@@ -3,12 +3,12 @@ configuration:
     name: Kiwix Server Port
     description: >-
       The port where the Kiwix server will serve ZIM files.
-      Default is 8080. Accessible via Home Assistant ingress and direct network access.
+      Default is 8111. Accessible via Home Assistant ingress and direct network access.
   management_port:
     name: Management API Port
     description: >-
       The port for the management web interface.
-      Default is 8081. Use this to download, upload, and manage ZIM files.
+      Default is 8112. Use this to download, upload, and manage ZIM files.
   zim_storage_path:
     name: ZIM Storage Path
     description: >-
