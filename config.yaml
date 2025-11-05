@@ -1,6 +1,6 @@
 name: "Kiwix Server"
 description: "Serve offline Wikipedia and other ZIM files with management interface"
-version: "1.0.5"
+version: "1.0.6"
 slug: "kiwix"
 arch:
   - aarch64
@@ -21,11 +21,13 @@ privileged: []
 ports:
   8080/tcp: 8080
   8081/tcp: 8081
-  8082/tcp: 8082
+  8180/tcp: 8180
+  8181/tcp: 8181
 ports_description:
   8080/tcp: "Kiwix server (default)"
   8081/tcp: "Management API (default)"
-  8082/tcp: "Management API (alternative port)"
+  8180/tcp: "Kiwix server (alternative)"
+  8181/tcp: "Management API (alternative)"
 map:
   - config:rw
   - ssl:ro
@@ -46,8 +48,9 @@ schema:
   enable_management: "bool"
 ingress: true
 ingress_port: 8080
-# Note: ingress_port should match the 'port' option value
-# If you change 'port' in options, update ingress_port to match
+# IMPORTANT: ingress_port is static and must match the default 'port' value (8080)
+# Ingress only works with the default port. If you change 'port' in options,
+# use direct network access instead of ingress (http://homeassistant-ip:PORT)
 panel_icon: mdi:book-open-variant
 panel_title: "Kiwix"
 

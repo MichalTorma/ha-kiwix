@@ -5,6 +5,14 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6] - 2025-01-XX
+
+### Fixed
+
+- Added ports 8180 and 8181 to exposed ports for alternative configurations
+- Added warning when configured port doesn't match ingress_port
+- Improved documentation about ingress port limitations
+
 ## [1.0.5] - 2025-01-XX
 
 ### Fixed

@@ -62,6 +62,14 @@ bashio::log.info "Starting Kiwix server on port ${PORT}..."
 bashio::log.info "Kiwix will serve ZIM files from: ${ZIM_STORAGE_PATH}"
 bashio::log.info "Using --library and --monitorLibrary for automatic ZIM file detection"
 
+# Check if ingress is enabled and if we need to handle port mismatch
+INGRESS_PORT=8080
+if [[ "${PORT}" != "${INGRESS_PORT}" ]]; then
+    bashio::log.warning "Kiwix configured on port ${PORT}, but ingress expects port ${INGRESS_PORT}"
+    bashio::log.warning "Ingress will not work. Use direct access: http://homeassistant-ip:${PORT}"
+    bashio::log.warning "Or change port to ${INGRESS_PORT} in configuration for ingress support"
+fi
+
 # Check if there are any ZIM files or create empty library
 ZIM_COUNT=$(find "${ZIM_STORAGE_PATH}" -maxdepth 1 -name "*.zim" -type f 2>/dev/null | wc -l)
 LIBRARY_XML="${ZIM_STORAGE_PATH}/library.xml"
