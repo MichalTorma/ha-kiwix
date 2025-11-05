@@ -1,0 +1,46 @@
+name: "Kiwix Server"
+description: "Serve offline Wikipedia and other ZIM files with management interface"
+version: "1.0.0"
+slug: "kiwix"
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+init: false
+startup: application
+boot: manual
+hassio_api: true
+hassio_role: default
+host_network: false
+privileged: []
+ports:
+  8080/tcp: 8080
+  8081/tcp: 8081
+ports_description:
+  8080/tcp: "Kiwix server"
+  8081/tcp: "Management API"
+map:
+  - config:rw
+  - ssl:ro
+  - data:rw
+options:
+  port: 8080
+  management_port: 8081
+  zim_storage_path: "/data/zim"
+  log_level: "info"
+  max_upload_size: 10000
+  enable_management: true
+schema:
+  port: "port"
+  management_port: "port"
+  zim_storage_path: "str"
+  log_level: "list(debug|info|warning|error)"
+  max_upload_size: "int(1,)"
+  enable_management: "bool"
+ingress: true
+ingress_port: 8080
+panel_icon: mdi:book-open-variant
+panel_title: "Kiwix"
+

@@ -1,0 +1,32 @@
+configuration:
+  port:
+    name: Kiwix Server Port
+    description: >-
+      The port where the Kiwix server will serve ZIM files.
+      Default is 8080. Accessible via Home Assistant ingress and direct network access.
+  management_port:
+    name: Management API Port
+    description: >-
+      The port for the management web interface.
+      Default is 8081. Use this to download, upload, and manage ZIM files.
+  zim_storage_path:
+    name: ZIM Storage Path
+    description: >-
+      The directory where ZIM files are stored.
+      Default is "/data/zim". Files in this directory are automatically detected by Kiwix.
+  log_level:
+    name: Log Level
+    description: >-
+      Set the logging verbosity level.
+      'debug' provides the most detailed logs, 'error' the least.
+  max_upload_size:
+    name: Maximum Upload Size (MB)
+    description: >-
+      Maximum size for uploaded ZIM files in megabytes.
+      Default is 10000 (10GB). Large ZIM files like full Wikipedia can be 100GB+.
+  enable_management:
+    name: Enable Management Interface
+    description: >-
+      Enable the web-based management interface for downloading, uploading, and managing ZIM files.
+      Set to false to disable the management API and UI.
+

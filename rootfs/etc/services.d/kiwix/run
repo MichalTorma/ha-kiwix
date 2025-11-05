@@ -1,0 +1,67 @@
+#!/usr/bin/with-contenv bashio
+# ==============================================================================
+# Home Assistant Community Add-on: Kiwix
+# Runs the Kiwix server and management API
+# ==============================================================================
+
+bashio::log.info "Starting Kiwix server and management API..."
+
+# Get configuration values
+PORT=$(bashio::config 'port')
+MANAGEMENT_PORT=$(bashio::config 'management_port')
+ZIM_STORAGE_PATH=$(bashio::config 'zim_storage_path')
+ENABLE_MANAGEMENT=$(bashio::config 'enable_management')
+LOG_LEVEL=$(bashio::config 'log_level')
+
+bashio::log.info "Configuration:"
+bashio::log.info "  Kiwix Server Port: ${PORT}"
+bashio::log.info "  Management API Port: ${MANAGEMENT_PORT}"
+bashio::log.info "  ZIM Storage Path: ${ZIM_STORAGE_PATH}"
+bashio::log.info "  Management Enabled: ${ENABLE_MANAGEMENT}"
+bashio::log.info "  Log Level: ${LOG_LEVEL}"
+
+# Ensure ZIM storage directory exists and has correct permissions
+mkdir -p "${ZIM_STORAGE_PATH}"
+chown -R kiwix:kiwix "${ZIM_STORAGE_PATH}"
+chmod -R g+w "${ZIM_STORAGE_PATH}"
+
+# Start management API in background if enabled
+if bashio::var.true "${ENABLE_MANAGEMENT}"; then
+    bashio::log.info "Starting management API on port ${MANAGEMENT_PORT}..."
+    export ZIM_STORAGE_PATH="${ZIM_STORAGE_PATH}"
+    export MAX_UPLOAD_SIZE=$(bashio::config 'max_upload_size')
+    nohup python3 /usr/local/bin/kiwix-manager.py \
+        --port ${MANAGEMENT_PORT} \
+        --storage-path "${ZIM_STORAGE_PATH}" \
+        --max-upload-size ${MAX_UPLOAD_SIZE} \
+        > /proc/1/fd/1 2>/proc/1/fd/2 &
+    MANAGEMENT_PID=$!
+    bashio::log.info "Management API started with PID ${MANAGEMENT_PID}"
+    
+    # Store PID for potential cleanup
+    echo ${MANAGEMENT_PID} > /tmp/kiwix-manager.pid
+    
+    # Wait a moment for management API to start
+    sleep 2
+    
+    # Check if management API is still running
+    if ! kill -0 ${MANAGEMENT_PID} 2>/dev/null; then
+        bashio::log.warning "Management API may have failed to start"
+    fi
+fi
+
+# Start Kiwix server
+bashio::log.info "Starting Kiwix server on port ${PORT}..."
+bashio::log.info "Kiwix will serve ZIM files from: ${ZIM_STORAGE_PATH}"
+bashio::log.info "Using --library and --monitorLibrary for automatic ZIM file detection"
+
+# Change to ZIM storage directory
+cd "${ZIM_STORAGE_PATH}" || bashio::exit.nok "Could not change to ZIM storage directory"
+
+# Start Kiwix server with library mode and monitoring
+# --library: Serve multiple ZIM files
+# --monitorLibrary: Automatically detect new/removed ZIM files
+# --address: Bind to all interfaces for ingress and direct access
+# --port: Listen on configured port
+exec kiwix-serve --library --monitorLibrary --address 0.0.0.0 --port ${PORT} .
+
