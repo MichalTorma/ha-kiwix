@@ -5,6 +5,13 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.3] - 2025-01-XX
+
+### Fixed
+
+- Fixed 404 error when clicking on ZIM files - added `/viewer` endpoint to Kiwix API routing
+- ZIM file viewer now works correctly when accessed via direct network or ingress
+
 ## [1.2.2] - 2025-01-XX
 
 ### Fixed
