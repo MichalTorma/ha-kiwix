@@ -5,6 +5,15 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.2] - 2025-01-XX
+
+### Fixed
+
+- Fixed 404 errors for API requests from iframes (Kiwix catalog endpoints and Management API)
+- Added location blocks to catch absolute path API requests (`/api/`, `/catalog/`, etc.)
+- Fixed routing so API calls work correctly from both direct access and ingress
+- Fixed duplicate MIME type warning in nginx config
+
 ## [1.2.1] - 2025-01-XX
 
 ### Fixed

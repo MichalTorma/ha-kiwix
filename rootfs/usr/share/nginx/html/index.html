@@ -61,8 +61,8 @@
             <button class="tab active" id="wikiTab" onclick="switchTab('wiki')">📚 Kiwix Wiki</button>
             <button class="tab" id="manageTab" onclick="switchTab('manage')">⚙️ Management</button>
         </div>
-        <iframe id="wikiFrame" class="content" src="/wiki/" title="Kiwix Wiki"></iframe>
-        <iframe id="manageFrame" class="content hidden" src="/manage/" title="Management"></iframe>
+        <iframe id="wikiFrame" class="content" src="/wiki/" title="Kiwix Wiki" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>
+        <iframe id="manageFrame" class="content hidden" src="/manage/" title="Management" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>
     </div>
     <script>
         function switchTab(tab) {
