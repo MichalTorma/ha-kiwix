@@ -1,6 +1,6 @@
 name: "Kiwix Server"
 description: "Serve offline Wikipedia and other ZIM files with management interface"
-version: "1.2.3"
+version: "1.2.4"
 slug: "kiwix"
 arch:
   - aarch64
