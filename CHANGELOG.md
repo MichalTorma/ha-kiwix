@@ -5,6 +5,28 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2025-01-XX
+
+### Fixed
+
+- **MAJOR**: Replaced hacky JavaScript approach with clean Lua-based HTML rewriting
+- HTML is now modified server-side before reaching the browser
+- Assets (CSS, JavaScript, images) now load correctly in Home Assistant ingress
+- No more client-side path manipulation or placeholder replacements
+
+### Changed
+
+- **BREAKING**: Now requires nginx-mod-http-lua (included in Dockerfile)
+- Migrated from nginx sub_filter + JavaScript to nginx + Lua for dynamic content rewriting
+- Uses `body_filter_by_lua_block` to rewrite absolute paths in HTML responses
+- Clean, maintainable solution that properly supports variables in path rewriting
+- Removed all client-side JavaScript hacks and cookie-based tracking
+
+### Added
+
+- Added nginx Lua module support for dynamic HTML modification
+- Proper support for Home Assistant ingress path rewriting at the reverse proxy level
+
 ## [1.3.2] - 2025-01-XX
 
 ### Fixed

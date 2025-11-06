@@ -8,6 +8,8 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG BUILD_ARCH
 
 # Install base dependencies
+# Note: nginx-mod-http-lua is REQUIRED for dynamic HTML path rewriting in Home Assistant ingress mode
+# This allows server-side modification of Kiwix HTML to fix absolute paths
 RUN \
     apk add --no-cache \
         ca-certificates \
@@ -18,7 +20,8 @@ RUN \
         python3 \
         py3-pip \
         jq \
-        nginx
+        nginx \
+        nginx-mod-http-lua
 
 # Install Kiwix tools
 # Try to install from Alpine repos first, fallback to building from source
