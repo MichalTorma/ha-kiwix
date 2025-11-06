@@ -10,6 +10,7 @@ import json
 import argparse
 import asyncio
 import logging
+import subprocess
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional
@@ -83,6 +84,44 @@ def get_zim_info(filepath: Path) -> Dict:
         return None
 
 
+def add_zim_to_library(filepath: Path, library_xml: Path):
+    """Add ZIM file to Kiwix library using kiwix-manage."""
+    try:
+        if not filepath.exists():
+            logger.error(f"Cannot add {filepath.name} to library: file does not exist")
+            return False
+        
+        # Ensure library.xml exists
+        if not library_xml.exists():
+            logger.info(f"Creating library.xml at {library_xml}")
+            library_xml.parent.mkdir(parents=True, exist_ok=True)
+            with open(library_xml, 'w') as f:
+                f.write('<?xml version="1.0" encoding="UTF-8"?>\n<library version="2.0" />\n')
+        
+        # Use kiwix-manage to add the ZIM file to library
+        logger.info(f"Adding {filepath.name} to library.xml using kiwix-manage")
+        result = subprocess.run(
+            ['kiwix-manage', str(library_xml), 'add', str(filepath)],
+            capture_output=True,
+            text=True,
+            timeout=60
+        )
+        
+        if result.returncode == 0:
+            logger.info(f"Successfully added {filepath.name} to library.xml")
+            return True
+        else:
+            logger.error(f"Failed to add {filepath.name} to library: {result.stderr}")
+            return False
+            
+    except subprocess.TimeoutExpired:
+        logger.error(f"Timeout adding {filepath.name} to library")
+        return False
+    except Exception as e:
+        logger.error(f"Error adding {filepath.name} to library: {e}")
+        return False
+
+
 def download_file_with_progress(url: str, filepath: Path, job_id: str):
     """Download file with progress tracking."""
     import urllib.request
@@ -110,6 +149,13 @@ def download_file_with_progress(url: str, filepath: Path, job_id: str):
             download_jobs[job_id]["progress"] = 100
             download_jobs[job_id]["file_size"] = filepath.stat().st_size
             logger.info(f"Download completed: {filepath.name} ({format_size(filepath.stat().st_size)})")
+            
+            # Add to library.xml
+            library_xml = filepath.parent / "library.xml"
+            if add_zim_to_library(filepath, library_xml):
+                logger.info(f"ZIM file {filepath.name} added to library successfully")
+            else:
+                logger.warning(f"ZIM file {filepath.name} downloaded but failed to add to library")
         else:
             download_jobs[job_id]["status"] = "failed"
             download_jobs[job_id]["error"] = "Downloaded file is empty or doesn't exist"
@@ -628,6 +674,14 @@ async def upload_zim_file(file: UploadFile = File(...)):
             raise HTTPException(status_code=500, detail="Upload failed: file is empty")
         
         logger.info(f"Uploaded file: {file.filename} ({format_size(filepath.stat().st_size)})")
+        
+        # Add to library.xml
+        library_xml = storage_path / "library.xml"
+        if add_zim_to_library(filepath, library_xml):
+            logger.info(f"ZIM file {file.filename} added to library successfully")
+        else:
+            logger.warning(f"ZIM file {file.filename} uploaded but failed to add to library")
+        
         return JSONResponse(content={
             "filename": file.filename,
             "size": filepath.stat().st_size,
@@ -654,6 +708,22 @@ async def delete_zim_file(filename: str):
         raise HTTPException(status_code=404, detail="File not found")
     
     try:
+        # Remove from library.xml if it exists
+        library_xml = storage_path / "library.xml"
+        if library_xml.exists():
+            logger.info(f"Removing {filename} from library.xml")
+            result = subprocess.run(
+                ['kiwix-manage', str(library_xml), 'remove', str(filepath)],
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+            if result.returncode == 0:
+                logger.info(f"Removed {filename} from library.xml")
+            else:
+                logger.warning(f"Failed to remove {filename} from library.xml: {result.stderr}")
+        
+        # Delete the file
         filepath.unlink()
         logger.info(f"Deleted file: {filename}")
         return JSONResponse(content={"message": f"File {filename} deleted successfully"})
@@ -681,6 +751,53 @@ async def get_zim_file_info(filename: str):
     return JSONResponse(content=info)
 
 
+def scan_and_add_existing_zim_files():
+    """Scan for existing ZIM files and add them to library.xml if not already present."""
+    library_xml = storage_path / "library.xml"
+    
+    # Find all ZIM files
+    zim_files = list(storage_path.glob("*.zim"))
+    
+    if not zim_files:
+        logger.info("No ZIM files found to scan")
+        return
+    
+    logger.info(f"Scanning {len(zim_files)} ZIM file(s) and adding to library if needed")
+    
+    # Check if library.xml exists and read it to see what's already there
+    existing_files = set()
+    if library_xml.exists():
+        try:
+            import xml.etree.ElementTree as ET
+            tree = ET.parse(library_xml)
+            root = tree.getroot()
+            for book in root.findall(".//book"):
+                path = book.get("path", "")
+                if path:
+                    # Extract filename from path
+                    filename = Path(path).name
+                    existing_files.add(filename)
+        except Exception as e:
+            logger.warning(f"Could not parse existing library.xml: {e}")
+    
+    # Add files that aren't in the library
+    added_count = 0
+    for zim_file in zim_files:
+        if zim_file.name not in existing_files:
+            logger.info(f"Adding existing ZIM file {zim_file.name} to library")
+            if add_zim_to_library(zim_file, library_xml):
+                added_count += 1
+            else:
+                logger.warning(f"Failed to add {zim_file.name} to library")
+        else:
+            logger.debug(f"ZIM file {zim_file.name} already in library")
+    
+    if added_count > 0:
+        logger.info(f"Added {added_count} existing ZIM file(s) to library.xml")
+    else:
+        logger.info("All ZIM files are already in library.xml")
+
+
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(description="Kiwix Management API")
@@ -701,6 +818,9 @@ def main():
     logger.info(f"Starting Kiwix Management API on {args.host}:{args.port}")
     logger.info(f"ZIM storage path: {storage_path}")
     logger.info(f"Max upload size: {format_size(max_upload_size)}")
+    
+    # Scan for existing ZIM files and add them to library
+    scan_and_add_existing_zim_files()
     
     uvicorn.run(
         app,
