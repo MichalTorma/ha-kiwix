@@ -61,10 +61,40 @@
             <button class="tab active" id="wikiTab" onclick="switchTab('wiki')">📚 Kiwix Wiki</button>
             <button class="tab" id="manageTab" onclick="switchTab('manage')">⚙️ Management</button>
         </div>
-        <iframe id="wikiFrame" class="content" src="/wiki/" title="Kiwix Wiki" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>
-        <iframe id="manageFrame" class="content hidden" src="/manage/" title="Management" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>
+        <iframe id="wikiFrame" class="content" title="Kiwix Wiki" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>
+        <iframe id="manageFrame" class="content hidden" title="Management" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>
     </div>
     <script>
+        // Detect base path (for ingress compatibility)
+        // When accessed via ingress, the pathname includes the ingress path
+        // e.g., /632709b9_kiwix/ingress/ -> base path is /632709b9_kiwix/ingress
+        // When accessed directly, pathname is just /
+        function getBasePath() {
+            const pathname = window.location.pathname;
+            // If pathname is just /, no ingress path
+            if (pathname === '/' || pathname === '') {
+                return '';
+            }
+            // Otherwise, extract the base path (everything before the last /)
+            // For ingress: /632709b9_kiwix/ingress/ -> /632709b9_kiwix/ingress
+            // For direct: / -> ''
+            const parts = pathname.split('/').filter(p => p);
+            if (parts.length === 0) {
+                return '';
+            }
+            // If we're at the root of ingress, return the ingress path
+            // Otherwise, return empty (shouldn't happen, but be safe)
+            return '/' + parts.join('/');
+        }
+        
+        const basePath = getBasePath();
+        const wikiSrc = basePath + '/wiki/';
+        const manageSrc = basePath + '/manage/';
+        
+        // Set iframe sources
+        document.getElementById('wikiFrame').src = wikiSrc;
+        document.getElementById('manageFrame').src = manageSrc;
+        
         function switchTab(tab) {
             // Update tab buttons
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
