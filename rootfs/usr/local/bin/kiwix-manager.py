@@ -380,25 +380,30 @@ async def management_ui():
         // Detect base path (for ingress compatibility)
         function getBasePath() {
             const pathname = window.location.pathname;
+            // Check if we're in an ingress context by looking for the ingress path pattern
+            // Pattern: /<addon_id>/ingress/manage/ or /<addon_id>/ingress/manage
+            const ingressMatch = pathname.match(/^(\/[^/]+\/ingress)/);
+            if (ingressMatch) {
+                return ingressMatch[1]; // Return /632709b9_kiwix/ingress
+            }
             // If pathname is just / or /manage/, no ingress path
             if (pathname === '/' || pathname === '/manage/' || pathname.match(/^\/manage\/?$/)) {
                 return '';
             }
-            // Extract the base path (ingress path)
-            // For ingress: /632709b9_kiwix/ingress/manage/ -> /632709b9_kiwix/ingress
+            // Fallback: extract ingress path from pathname
             const parts = pathname.split('/').filter(p => p);
-            if (parts.length >= 2 && parts[parts.length - 1] === 'manage') {
-                // Remove 'manage' and 'ingress' to get base path
-                const ingressIndex = parts.indexOf('ingress');
-                if (ingressIndex >= 0) {
-                    return '/' + parts.slice(0, ingressIndex + 1).join('/');
-                }
+            const ingressIndex = parts.indexOf('ingress');
+            if (ingressIndex >= 0) {
+                return '/' + parts.slice(0, ingressIndex + 1).join('/');
             }
             return '';
         }
         
         const basePath = getBasePath();
         const apiBase = basePath + '/api';
+        
+        console.log('Management: Detected base path:', basePath);
+        console.log('Management: API base:', apiBase);
         
         let downloadJobId = null;
         let downloadInterval = null;

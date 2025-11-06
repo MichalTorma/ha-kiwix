@@ -66,34 +66,86 @@
     </div>
     <script>
         // Detect base path (for ingress compatibility)
-        // When accessed via ingress, the pathname includes the ingress path
-        // e.g., /632709b9_kiwix/ingress/ -> base path is /632709b9_kiwix/ingress
+        // When accessed via ingress, the full URL includes the ingress path
+        // e.g., https://lom.michaltorma.com/632709b9_kiwix/ingress/ -> base path is /632709b9_kiwix/ingress
         // When accessed directly, pathname is just /
         function getBasePath() {
             const pathname = window.location.pathname;
+            // Check if we're in an ingress context by looking for the ingress path pattern
+            // Pattern: /<addon_id>/ingress/ or /<addon_id>/ingress
+            const ingressMatch = pathname.match(/^(\/[^/]+\/ingress)/);
+            if (ingressMatch) {
+                return ingressMatch[1]; // Return /632709b9_kiwix/ingress
+            }
             // If pathname is just /, no ingress path
             if (pathname === '/' || pathname === '') {
                 return '';
             }
-            // Otherwise, extract the base path (everything before the last /)
-            // For ingress: /632709b9_kiwix/ingress/ -> /632709b9_kiwix/ingress
-            // For direct: / -> ''
+            // Fallback: if pathname has multiple parts and ends with nothing or '/', 
+            // and contains 'ingress', extract the ingress path
             const parts = pathname.split('/').filter(p => p);
-            if (parts.length === 0) {
-                return '';
+            const ingressIndex = parts.indexOf('ingress');
+            if (ingressIndex >= 0) {
+                return '/' + parts.slice(0, ingressIndex + 1).join('/');
             }
-            // If we're at the root of ingress, return the ingress path
-            // Otherwise, return empty (shouldn't happen, but be safe)
-            return '/' + parts.join('/');
+            return '';
         }
         
         const basePath = getBasePath();
         const wikiSrc = basePath + '/wiki/';
         const manageSrc = basePath + '/manage/';
         
+        console.log('Detected base path:', basePath);
+        console.log('Wiki iframe src:', wikiSrc);
+        console.log('Manage iframe src:', manageSrc);
+        
         // Set iframe sources
         document.getElementById('wikiFrame').src = wikiSrc;
         document.getElementById('manageFrame').src = manageSrc;
+        
+        // Inject path rewriting script into iframes when they load
+        function injectPathRewriter(iframe) {
+            iframe.addEventListener('load', function() {
+                try {
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    if (!iframeDoc) return;
+                    
+                    // Create a script that rewrites absolute paths
+                    const script = iframeDoc.createElement('script');
+                    script.textContent = `
+                        (function() {
+                            const basePath = '${basePath}';
+                            if (!basePath) return; // No rewriting needed for direct access
+                            
+                            // Rewrite fetch/XHR requests
+                            const originalFetch = window.fetch;
+                            window.fetch = function(url, ...args) {
+                                if (typeof url === 'string' && url.startsWith('/') && !url.startsWith(basePath)) {
+                                    url = basePath + url;
+                                }
+                                return originalFetch.call(this, url, ...args);
+                            };
+                            
+                            // Rewrite XMLHttpRequest
+                            const originalOpen = XMLHttpRequest.prototype.open;
+                            XMLHttpRequest.prototype.open = function(method, url, ...args) {
+                                if (typeof url === 'string' && url.startsWith('/') && !url.startsWith(basePath)) {
+                                    url = basePath + url;
+                                }
+                                return originalOpen.call(this, method, url, ...args);
+                            };
+                        })();
+                    `;
+                    iframeDoc.head.appendChild(script);
+                } catch (e) {
+                    // Cross-origin restrictions - this is expected for some content
+                    console.log('Could not inject path rewriter (cross-origin):', e.message);
+                }
+            });
+        }
+        
+        injectPathRewriter(document.getElementById('wikiFrame'));
+        injectPathRewriter(document.getElementById('manageFrame'));
         
         function switchTab(tab) {
             // Update tab buttons

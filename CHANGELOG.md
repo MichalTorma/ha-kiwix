@@ -5,6 +5,16 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.7] - 2025-01-XX
+
+### Fixed
+
+- Improved ingress path detection using regex pattern matching
+- Added JavaScript-based path rewriting for iframe content (fetch/XHR)
+- Removed nginx sub_filter variable usage (not supported) in favor of JavaScript rewriting
+- Added console logging for debugging ingress path detection
+- Fixed duplicate MIME type warning in nginx config
+
 ## [1.2.6] - 2025-01-XX
 
 ### Fixed
