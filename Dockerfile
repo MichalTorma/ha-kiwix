@@ -7,7 +7,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Build arguments
 ARG BUILD_ARCH
 
-# Install base dependencies and build dependencies for nginx-lua-module
+# Install base dependencies
 RUN \
     apk add --no-cache \
         ca-certificates \
@@ -18,56 +18,7 @@ RUN \
         python3 \
         py3-pip \
         jq \
-        nginx \
-        lua5.1 \
-        lua5.1-dev \
-        luajit \
-        luajit-dev
-
-# Build and install nginx lua module from source
-RUN \
-    apk add --no-cache --virtual .build-deps \
-        build-base \
-        linux-headers \
-        openssl-dev \
-        pcre-dev \
-        zlib-dev \
-        nginx \
-        git \
-    && mkdir -p /tmp/build \
-    && cd /tmp/build \
-    # Download ngx_devel_kit
-    && wget https://github.com/vision5/ngx_devel_kit/archive/v0.3.3.tar.gz -O ndk.tar.gz \
-    && tar -xzf ndk.tar.gz \
-    && NDK_DIR=$(pwd)/ngx_devel_kit-0.3.3 \
-    # Download lua-nginx-module
-    && wget https://github.com/openresty/lua-nginx-module/archive/v0.10.26.tar.gz -O lua-nginx.tar.gz \
-    && tar -xzf lua-nginx.tar.gz \
-    && LUA_DIR=$(pwd)/lua-nginx-module-0.10.26 \
-    # Get nginx version (BusyBox-compatible)
-    && NGINX_VERSION=$(nginx -v 2>&1 | sed -n 's/.*nginx\/\([0-9.]*\).*/\1/p') \
-    && echo "Detected nginx version: ${NGINX_VERSION}" \
-    && wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
-    && tar -xzf nginx-${NGINX_VERSION}.tar.gz \
-    && cd nginx-${NGINX_VERSION} \
-    # Build as dynamic modules with --with-compat flag (ensures ABI compatibility)
-    && export LUAJIT_LIB=/usr/lib \
-    && export LUAJIT_INC=/usr/include/luajit-2.1 \
-    && ./configure \
-        --with-compat \
-        --add-dynamic-module=${NDK_DIR} \
-        --add-dynamic-module=${LUA_DIR} \
-    && make modules \
-    # Install modules
-    && mkdir -p /usr/lib/nginx/modules \
-    && cp objs/ndk_http_module.so /usr/lib/nginx/modules/ \
-    && cp objs/ngx_http_lua_module.so /usr/lib/nginx/modules/ \
-    # Verify modules
-    && ls -lah /usr/lib/nginx/modules/ \
-    # Cleanup
-    && cd / \
-    && rm -rf /tmp/build \
-    && apk del .build-deps
+        nginx
 
 # Install Kiwix tools
 # Try to install from Alpine repos first, fallback to building from source

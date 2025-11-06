@@ -5,19 +5,30 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.5.3] - 2025-01-XX
+## [2.0.0] - 2025-01-XX
 
-### Fixed
+### BREAKING CHANGE
 
-- Fixed nginx configure failure due to missing module source paths
-- Simplified module compilation to use only `--with-compat` flag
-- Removed attempt to use nginx's original configure args (contained invalid paths)
+- **Removed Lua module compilation** - too complex with binary compatibility issues
+- **Home Assistant ingress has limited functionality** - Kiwix assets won't load correctly
+- **Direct network access is the supported method**: `http://IP:8111/`
 
-### Changed
+### Removed
 
-- Cleaner build approach: compile modules with `--with-compat` for ABI compatibility
-- No longer tries to replicate nginx's full build configuration
-- Modules built with minimal, standard configuration for maximum compatibility
+- Removed nginx Lua module build process
+- Removed all Lua-based HTML rewriting code
+- Removed LuaJIT dependencies
+
+### Why This Change
+
+After extensive attempts to build nginx Lua modules with proper binary compatibility:
+- Module compilation succeeded but modules weren't ABI-compatible
+- nginx's build environment is complex and hard to replicate
+- Building from source added 3+ minutes to build time
+- **Reality**: Kiwix's absolute paths are incompatible with HA ingress proxy
+
+**Recommendation**: Use direct network access for full Kiwix functionality.
+**Ingress still works** for management interface and basic navigation.
 
 ## [1.5.2] - 2025-01-XX
 

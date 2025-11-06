@@ -12,19 +12,23 @@ A Kiwix server for serving offline Wikipedia and other ZIM files with a built-in
 
 ## Access Methods
 
-The add-on can be accessed in two ways:
-
-**Home Assistant Ingress** (Sidebar):
-- Click the add-on in your Home Assistant sidebar
-- Provides seamless integration with HA interface
-- Full functionality with all assets loading correctly
-
-**Direct Network Access**:
+**Direct Network Access** (Recommended):
 - Access via `http://YOUR_HA_IP:8111/`
-- Useful for devices outside your Home Assistant interface
-- Identical functionality to ingress access
+- **Full Kiwix functionality** - all features work correctly
+- Management interface, ZIM browsing, search all work perfectly
+- Bookmark this URL for easy access
 
-Both methods provide complete Kiwix functionality. The add-on uses server-side HTML rewriting (via nginx + Lua) to ensure all assets load correctly regardless of access method.
+**Home Assistant Ingress** (Limited):
+- Available via HA sidebar
+- Management interface works
+- Kiwix content has limited functionality (assets may not load)
+- **Limitation**: Kiwix uses absolute paths incompatible with ingress proxy
+
+### Why Direct Access?
+
+Kiwix generates HTML with absolute paths (e.g., `/skin/kiwix.css`). When accessed through Home Assistant's ingress proxy at `/api/hassio_ingress/<token>/wiki/`, these paths resolve to the wrong location. The proper fix requires server-side HTML rewriting with nginx Lua modules, which have proven too complex to build with proper binary compatibility in the HA environment.
+
+**Solution**: Use direct network access for the best experience.
 
 ## Configuration
 
