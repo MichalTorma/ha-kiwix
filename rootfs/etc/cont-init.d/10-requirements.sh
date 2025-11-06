@@ -15,10 +15,8 @@ bashio::log.info "Kiwix tools found: $(kiwix-serve --version 2>&1 || echo 'versi
 
 # Check port configuration
 PORT=$(bashio::config 'port')
-MANAGEMENT_PORT=$(bashio::config 'management_port')
-
-if (( PORT == MANAGEMENT_PORT )); then
-    bashio::exit.nok "Kiwix server port and management port must be different!"
+if bashio::var.is_empty "${PORT}"; then
+    bashio::exit.nok "Port must be configured!"
 fi
 
 # Check ZIM storage path
