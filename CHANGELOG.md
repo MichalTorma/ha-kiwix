@@ -5,6 +5,20 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.3] - 2025-01-XX
+
+### Fixed
+
+- Fixed nginx configure failure due to missing module source paths
+- Simplified module compilation to use only `--with-compat` flag
+- Removed attempt to use nginx's original configure args (contained invalid paths)
+
+### Changed
+
+- Cleaner build approach: compile modules with `--with-compat` for ABI compatibility
+- No longer tries to replicate nginx's full build configuration
+- Modules built with minimal, standard configuration for maximum compatibility
+
 ## [1.5.2] - 2025-01-XX
 
 ### Fixed
