@@ -92,16 +92,28 @@
         }
         
         const basePath = getBasePath();
-        const wikiSrc = basePath + '/wiki/';
-        const manageSrc = basePath + '/manage/';
         
-        console.log('Detected base path:', basePath);
-        console.log('Wiki iframe src:', wikiSrc);
-        console.log('Manage iframe src:', manageSrc);
+        // Debug: log current URL and detected paths
+        console.log('[Landing Page] Full URL:', window.location.href);
+        console.log('[Landing Page] Pathname:', window.location.pathname);
+        console.log('[Landing Page] Detected base path:', basePath);
+        
+        // Build iframe URLs - ensure they include base path
+        const wikiSrc = (basePath ? basePath : '') + '/wiki/';
+        const manageSrc = (basePath ? basePath : '') + '/manage/';
+        
+        console.log('[Landing Page] Wiki iframe src:', wikiSrc);
+        console.log('[Landing Page] Manage iframe src:', manageSrc);
         
         // Set iframe sources
-        document.getElementById('wikiFrame').src = wikiSrc;
-        document.getElementById('manageFrame').src = manageSrc;
+        const wikiFrame = document.getElementById('wikiFrame');
+        const manageFrame = document.getElementById('manageFrame');
+        
+        wikiFrame.src = wikiSrc;
+        manageFrame.src = manageSrc;
+        
+        console.log('[Landing Page] Wiki iframe src attribute:', wikiFrame.src);
+        console.log('[Landing Page] Manage iframe src attribute:', manageFrame.src);
         
         // Inject path rewriting script into iframes when they load
         // Use postMessage to pass the base path to iframe content
