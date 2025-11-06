@@ -44,8 +44,8 @@ RUN \
     && wget https://github.com/openresty/lua-nginx-module/archive/v0.10.26.tar.gz -O lua-nginx.tar.gz \
     && tar -xzf lua-nginx.tar.gz \
     && LUA_DIR=$(pwd)/lua-nginx-module-0.10.26 \
-    # Get nginx version and source
-    && NGINX_VERSION=$(nginx -v 2>&1 | grep -oP 'nginx/\K[0-9.]+') \
+    # Get nginx version and source (BusyBox-compatible)
+    && NGINX_VERSION=$(nginx -v 2>&1 | sed -n 's/.*nginx\/\([0-9.]*\).*/\1/p') \
     && wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
     && tar -xzf nginx-${NGINX_VERSION}.tar.gz \
     && cd nginx-${NGINX_VERSION} \
