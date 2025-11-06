@@ -5,6 +5,16 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.6] - 2025-01-XX
+
+### Fixed
+
+- Fixed management API not seeing ZIM files when accessed via ingress
+- Updated management API JavaScript to detect and use ingress path for API calls
+- Fixed Kiwix CSS and data not loading via ingress by improving ingress path detection
+- Ingress path is now extracted from request URI when header is not available
+- Both Kiwix wiki and management interface now work correctly via ingress
+
 ## [1.2.5] - 2025-01-XX
 
 ### Fixed

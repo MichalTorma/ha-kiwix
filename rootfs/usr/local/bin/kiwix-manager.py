@@ -377,6 +377,29 @@ async def management_ui():
     </div>
     
     <script>
+        // Detect base path (for ingress compatibility)
+        function getBasePath() {
+            const pathname = window.location.pathname;
+            // If pathname is just / or /manage/, no ingress path
+            if (pathname === '/' || pathname === '/manage/' || pathname.match(/^\/manage\/?$/)) {
+                return '';
+            }
+            // Extract the base path (ingress path)
+            // For ingress: /632709b9_kiwix/ingress/manage/ -> /632709b9_kiwix/ingress
+            const parts = pathname.split('/').filter(p => p);
+            if (parts.length >= 2 && parts[parts.length - 1] === 'manage') {
+                // Remove 'manage' and 'ingress' to get base path
+                const ingressIndex = parts.indexOf('ingress');
+                if (ingressIndex >= 0) {
+                    return '/' + parts.slice(0, ingressIndex + 1).join('/');
+                }
+            }
+            return '';
+        }
+        
+        const basePath = getBasePath();
+        const apiBase = basePath + '/api';
+        
         let downloadJobId = null;
         let downloadInterval = null;
         
@@ -391,7 +414,7 @@ async def management_ui():
         
         async function loadFiles() {
             try {
-                const response = await fetch('/api/zim');
+                const response = await fetch(apiBase + '/zim');
                 const files = await response.json();
                 const fileList = document.getElementById('fileList');
                 
@@ -426,7 +449,7 @@ async def management_ui():
             }
             
             try {
-                const response = await fetch(`/api/zim/${encodeURIComponent(filename)}`, {
+                const response = await fetch(`${apiBase}/zim/${encodeURIComponent(filename)}`, {
                     method: 'DELETE'
                 });
                 
@@ -453,7 +476,7 @@ async def management_ui():
             progressFill.textContent = 'Starting...';
             
             try {
-                const response = await fetch('/api/zim/download', {
+                const response = await fetch(apiBase + '/zim/download', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url: url })
@@ -467,7 +490,7 @@ async def management_ui():
                     // Poll for progress
                     downloadInterval = setInterval(async () => {
                         try {
-                            const statusResponse = await fetch(`/api/download/${downloadJobId}/status`);
+                            const statusResponse = await fetch(`${apiBase}/download/${downloadJobId}/status`);
                             const status = await statusResponse.json();
                             
                             progressFill.style.width = status.progress + '%';
@@ -546,7 +569,7 @@ async def management_ui():
                     progressContainer.classList.remove('active');
                 });
                 
-                xhr.open('POST', '/api/zim/upload');
+                xhr.open('POST', apiBase + '/zim/upload');
                 xhr.send(formData);
             } catch (error) {
                 showStatus('Error: ' + error.message, 'error');
