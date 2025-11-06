@@ -5,6 +5,37 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.2] - 2025-01-XX
+
+### Fixed
+
+- **CRITICAL**: Fixed Kiwix asset loading in HA ingress using placeholder-based HTML rewriting
+- Uses `sub_filter` to replace absolute paths with `__INGRESS__` placeholder
+- Injects JavaScript that detects ingress path and rewrites entire document before resources load
+- Added cookie-based tracking to prevent infinite reloads
+- Added Referer-based redirect for API endpoints accessed without ingress prefix
+- Assets (CSS, JavaScript, images) now load correctly in Home Assistant ingress
+
+### Changed
+
+- Complete rewrite of ingress handling using multi-step approach
+- Split API endpoint handling into separate location blocks for better routing
+- Improved nginx configuration with comprehensive sub_filter rules for all Kiwix paths
+
+## [1.3.1] - 2025-01-XX
+
+### Fixed
+
+- **CRITICAL**: Fixed Kiwix asset loading in Home Assistant ingress using HTML `<base>` tag injection
+- Assets (CSS, JavaScript) now load correctly when accessed via HA ingress
+- Injected script dynamically sets base URL to resolve all paths relative to ingress path
+- Improved nginx buffer settings for better sub_filter performance
+
+### Changed
+
+- Simplified nginx sub_filter approach for HA ingress wiki location
+- Used synchronous `document.write()` for base tag to ensure it applies before resources load
+
 ## [1.3.0] - 2025-01-XX
 
 ### Fixed

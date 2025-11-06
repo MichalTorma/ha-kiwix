@@ -89,6 +89,9 @@ bashio::log.info "Starting Kiwix server on internal port ${KIWIX_INTERNAL_PORT}.
 bashio::log.info "Kiwix will serve ZIM files from: ${ZIM_STORAGE_PATH}"
 bashio::log.info "Using --library and --monitorLibrary for automatic ZIM file detection"
 
+# Note: We can't use --urlRootLocation with a dynamic ingress token since it changes per session
+# Instead, we rely on nginx sub_filter and JavaScript to rewrite paths
+
 if [[ -f "${LIBRARY_XML}" ]]; then
     nohup kiwix-serve --library --monitorLibrary --address 0.0.0.0 --port ${KIWIX_INTERNAL_PORT} "${LIBRARY_XML}" \
         > /proc/1/fd/1 2>/proc/1/fd/2 &

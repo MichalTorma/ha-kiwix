@@ -130,73 +130,94 @@
         console.log('[Landing Page] Wiki iframe src attribute:', wikiFrame.src);
         console.log('[Landing Page] Manage iframe src attribute:', manageFrame.src);
         
-        // Inject path rewriting script into iframes when they load
-        // Use postMessage to pass the base path to iframe content
-        function injectPathRewriter(iframe, iframeType) {
-            // Send base path to iframe via postMessage
-            iframe.addEventListener('load', function() {
-                try {
-                    const iframeWindow = iframe.contentWindow;
-                    if (!iframeWindow) return;
-                    
-                    // Send the base path to the iframe
-                    iframeWindow.postMessage({
-                        type: 'ingress-path',
-                        basePath: basePath
-                    }, '*');
-                    
-                    // Also try to inject script directly (for same-origin content)
+            // Inject path rewriting script into iframes when they load
+            // This is needed because Kiwix generates absolute URLs without the ingress prefix
+            function injectPathRewriter(iframe, iframeType) {
+                iframe.addEventListener('load', function() {
+                    console.log(`[Landing Page] Iframe loaded: ${iframeType}, attempting to inject rewriter`);
                     try {
-                        const iframeDoc = iframe.contentDocument || iframeWindow.document;
-                        if (iframeDoc) {
-                            const script = iframeDoc.createElement('script');
-                            script.textContent = `
-                                (function() {
-                                    const basePath = '${basePath}';
-                                    if (!basePath) return;
-                                    
-                                    // Listen for postMessage from parent
-                                    window.addEventListener('message', function(event) {
-                                        if (event.data && event.data.type === 'ingress-path') {
-                                            window.__INGRESS_BASE_PATH__ = event.data.basePath;
-                                        }
-                                    });
-                                    
-                                    // Set initial base path
-                                    window.__INGRESS_BASE_PATH__ = basePath;
-                                    
-                                    // Rewrite fetch/XHR requests
-                                    const originalFetch = window.fetch;
-                                    window.fetch = function(url, ...args) {
-                                        const bp = window.__INGRESS_BASE_PATH__ || '';
-                                        if (typeof url === 'string' && url.startsWith('/') && !url.startsWith(bp)) {
-                                            url = bp + url;
-                                        }
-                                        return originalFetch.call(this, url, ...args);
-                                    };
-                                    
-                                    // Rewrite XMLHttpRequest
-                                    const originalOpen = XMLHttpRequest.prototype.open;
-                                    XMLHttpRequest.prototype.open = function(method, url, ...args) {
-                                        const bp = window.__INGRESS_BASE_PATH__ || '';
-                                        if (typeof url === 'string' && url.startsWith('/') && !url.startsWith(bp)) {
-                                            url = bp + url;
-                                        }
-                                        return originalOpen.call(this, method, url, ...args);
-                                    };
-                                })();
-                            `;
-                            iframeDoc.head.appendChild(script);
+                        const iframeWindow = iframe.contentWindow;
+                        if (!iframeWindow) {
+                            console.log(`[Landing Page] No contentWindow for ${iframeType}`);
+                            return;
                         }
+                        
+                        // Try to inject script directly (for same-origin content)
+                        try {
+                            const iframeDoc = iframe.contentDocument || iframeWindow.document;
+                            if (iframeDoc) {
+                                console.log(`[Landing Page] Direct access to ${iframeType} document - injecting script`);
+                                const script = iframeDoc.createElement('script');
+                                script.textContent = `
+                                    (function() {
+                                        const basePath = '${basePath}';
+                                        console.log('[Iframe Rewriter] Injected with basePath:', basePath);
+                                        if (!basePath) {
+                                            console.log('[Iframe Rewriter] No basePath, skipping rewriting');
+                                            return;
+                                        }
+                                        
+                                        // Set global variable for other scripts to use
+                                        window.__INGRESS_BASE_PATH__ = basePath;
+                                        
+                                        // Rewrite fetch requests
+                                        const originalFetch = window.fetch;
+                                        window.fetch = function(url, ...args) {
+                                            if (typeof url === 'string' && url.startsWith('/') && !url.startsWith(basePath)) {
+                                                const rewrittenUrl = basePath + url;
+                                                console.log('[Iframe Rewriter] Rewriting fetch:', url, '->', rewrittenUrl);
+                                                return originalFetch.call(this, rewrittenUrl, ...args);
+                                            }
+                                            return originalFetch.call(this, url, ...args);
+                                        };
+                                        
+                                        // Rewrite XMLHttpRequest
+                                        const originalOpen = XMLHttpRequest.prototype.open;
+                                        XMLHttpRequest.prototype.open = function(method, url, ...args) {
+                                            if (typeof url === 'string' && url.startsWith('/') && !url.startsWith(basePath)) {
+                                                const rewrittenUrl = basePath + url;
+                                                console.log('[Iframe Rewriter] Rewriting XHR:', url, '->', rewrittenUrl);
+                                                url = rewrittenUrl;
+                                            }
+                                            return originalOpen.call(this, method, url, ...args);
+                                        };
+                                        
+                                        console.log('[Iframe Rewriter] Fetch and XHR interceptors installed');
+                                    })();
+                                `;
+                                // Insert at the very beginning of head to catch early requests
+                                if (iframeDoc.head) {
+                                    iframeDoc.head.insertBefore(script, iframeDoc.head.firstChild);
+                                    console.log(`[Landing Page] Script injected into ${iframeType} head`);
+                                } else {
+                                    console.log(`[Landing Page] No head element yet in ${iframeType}, waiting...`);
+                                    // Try again after a short delay
+                                    setTimeout(() => {
+                                        if (iframeDoc.head) {
+                                            iframeDoc.head.insertBefore(script, iframeDoc.head.firstChild);
+                                            console.log(`[Landing Page] Script injected into ${iframeType} head (delayed)`);
+                                        }
+                                    }, 50);
+                                }
+                            } else {
+                                console.log(`[Landing Page] No document object for ${iframeType}`);
+                            }
+                        } catch (e) {
+                            // Cross-origin - can't inject
+                            console.log(`[Landing Page] Cannot inject into ${iframeType} (likely cross-origin):`, e.message);
+                        }
+                        
+                        // Also send postMessage as fallback
+                        iframeWindow.postMessage({
+                            type: 'ingress-path',
+                            basePath: basePath
+                        }, '*');
+                        console.log(`[Landing Page] Sent postMessage to ${iframeType} with basePath:`, basePath);
                     } catch (e) {
-                        // Cross-origin - use postMessage only
-                        console.log('Direct script injection failed, using postMessage only:', e.message);
+                        console.error(`[Landing Page] Error in injectPathRewriter for ${iframeType}:`, e);
                     }
-                } catch (e) {
-                    console.error('Error injecting path rewriter:', e);
-                }
-            });
-        }
+                });
+            }
         
         injectPathRewriter(document.getElementById('wikiFrame'), 'wiki');
         injectPathRewriter(document.getElementById('manageFrame'), 'manage');
