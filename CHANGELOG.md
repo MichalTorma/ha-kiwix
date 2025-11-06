@@ -5,6 +5,19 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.2] - 2025-01-XX
+
+### Fixed
+
+- **CRITICAL**: Fixed nginx module binary compatibility by using nginx's original configure arguments
+- Modules now compile with exact same configuration as installed nginx
+- Fixed Python SyntaxWarning: removed unnecessary backslash escaping in JavaScript regex
+
+### Changed
+
+- Extracts and uses nginx's configure arguments during module compilation
+- Ensures compiled modules are binary compatible with container's nginx
+
 ## [1.5.1] - 2025-01-XX
 
 ### Fixed

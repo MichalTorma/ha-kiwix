@@ -44,19 +44,21 @@ RUN \
     && wget https://github.com/openresty/lua-nginx-module/archive/v0.10.26.tar.gz -O lua-nginx.tar.gz \
     && tar -xzf lua-nginx.tar.gz \
     && LUA_DIR=$(pwd)/lua-nginx-module-0.10.26 \
-    # Get nginx version and source (BusyBox-compatible)
+    # Get nginx version and configuration (BusyBox-compatible)
     && NGINX_VERSION=$(nginx -v 2>&1 | sed -n 's/.*nginx\/\([0-9.]*\).*/\1/p') \
+    && echo "Detected nginx version: ${NGINX_VERSION}" \
+    # Get nginx configure arguments to ensure compatibility
+    && NGINX_ARGS=$(nginx -V 2>&1 | grep "configure arguments:" | sed 's/configure arguments://') \
+    && echo "Nginx configure args: ${NGINX_ARGS}" \
     && wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
     && tar -xzf nginx-${NGINX_VERSION}.tar.gz \
     && cd nginx-${NGINX_VERSION} \
-    # Configure and build as dynamic modules
+    # Configure with same args as installed nginx, adding our dynamic modules
     && export LUAJIT_LIB=/usr/lib \
     && export LUAJIT_INC=/usr/include/luajit-2.1 \
-    && ./configure \
-        --with-compat \
+    && ./configure ${NGINX_ARGS} \
         --add-dynamic-module=${NDK_DIR} \
         --add-dynamic-module=${LUA_DIR} \
-        --with-ld-opt="-Wl,-rpath,/usr/lib" \
     && make modules \
     # Install modules
     && mkdir -p /usr/lib/nginx/modules \
