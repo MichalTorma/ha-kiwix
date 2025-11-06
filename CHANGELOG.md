@@ -5,6 +5,20 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2025-01-XX
+
+### Fixed
+
+- **CRITICAL**: Fixed Home Assistant ingress compatibility by detecting `/api/hassio_ingress/<token>/` pattern
+- Ingress now works correctly when accessed from Home Assistant dashboard
+- Updated path detection in landing page, nginx, and management API to handle HA ingress pattern
+- Added comprehensive console logging for debugging ingress path detection
+
+### Changed
+
+- Updated all nginx location blocks to handle both `/api/hassio_ingress/<token>/` (HA) and `/<addon_id>/ingress/` (old) patterns
+- Improved JavaScript path detection with fallback support for multiple ingress patterns
+
 ## [1.2.9] - 2025-01-XX
 
 ### Fixed

@@ -71,23 +71,38 @@
         // When accessed directly, pathname is just /
         function getBasePath() {
             const pathname = window.location.pathname;
-            // Check if we're in an ingress context by looking for the ingress path pattern
-            // Pattern: /<addon_id>/ingress/ or /<addon_id>/ingress
+            
+            // Home Assistant ingress uses pattern: /api/hassio_ingress/<session_token>/
+            // We need to detect this and use it as the base path
+            const hassioIngressMatch = pathname.match(/^(\/api\/hassio_ingress\/[^/]+)/);
+            if (hassioIngressMatch) {
+                console.log('[Landing Page] Detected Home Assistant ingress path:', hassioIngressMatch[1]);
+                return hassioIngressMatch[1]; // Return /api/hassio_ingress/<token>
+            }
+            
+            // Fallback: Check for old-style ingress pattern /<addon_id>/ingress/
             const ingressMatch = pathname.match(/^(\/[^/]+\/ingress)/);
             if (ingressMatch) {
-                return ingressMatch[1]; // Return /632709b9_kiwix/ingress
+                console.log('[Landing Page] Detected old-style ingress path:', ingressMatch[1]);
+                return ingressMatch[1];
             }
-            // If pathname is just /, no ingress path
+            
+            // If pathname is just /, no ingress path (direct access)
             if (pathname === '/' || pathname === '') {
+                console.log('[Landing Page] No ingress path - direct access');
                 return '';
             }
-            // Fallback: if pathname has multiple parts and ends with nothing or '/', 
-            // and contains 'ingress', extract the ingress path
+            
+            // Fallback: extract ingress path if 'ingress' is in pathname
             const parts = pathname.split('/').filter(p => p);
             const ingressIndex = parts.indexOf('ingress');
             if (ingressIndex >= 0) {
-                return '/' + parts.slice(0, ingressIndex + 1).join('/');
+                const fallbackPath = '/' + parts.slice(0, ingressIndex + 1).join('/');
+                console.log('[Landing Page] Fallback ingress path detection:', fallbackPath);
+                return fallbackPath;
             }
+            
+            console.log('[Landing Page] No ingress path detected');
             return '';
         }
         

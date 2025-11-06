@@ -385,8 +385,16 @@ async def management_ui():
             try {
                 if (window.parent && window.parent !== window) {
                     const parentPath = window.parent.location.pathname;
-                    const ingressMatch = parentPath.match(/^(\/[^\/]+\/ingress)/);
+                    // Home Assistant ingress pattern: /api/hassio_ingress/<token>
+                    let ingressMatch = parentPath.match(/^(\/api\/hassio_ingress\/[^\/]+)/);
                     if (ingressMatch) {
+                        console.log('[Management] Detected HA ingress from parent:', ingressMatch[1]);
+                        return ingressMatch[1];
+                    }
+                    // Old ingress pattern: /<addon_id>/ingress
+                    ingressMatch = parentPath.match(/^(\/[^\/]+\/ingress)/);
+                    if (ingressMatch) {
+                        console.log('[Management] Detected old ingress from parent:', ingressMatch[1]);
                         return ingressMatch[1];
                     }
                 }
@@ -396,25 +404,36 @@ async def management_ui():
             
             // Check if base path was set via postMessage
             if (window.__INGRESS_BASE_PATH__) {
+                console.log('[Management] Using base path from postMessage:', window.__INGRESS_BASE_PATH__);
                 return window.__INGRESS_BASE_PATH__;
             }
             
             // Listen for postMessage from parent
             window.addEventListener('message', function(event) {
                 if (event.data && event.data.type === 'ingress-path') {
+                    console.log('[Management] Received base path via postMessage:', event.data.basePath);
                     window.__INGRESS_BASE_PATH__ = event.data.basePath;
                 }
             });
             
             // Fallback: try to detect from current pathname
             const pathname = window.location.pathname;
-            const ingressMatch = pathname.match(/^(\/[^\/]+\/ingress)/);
+            // Home Assistant ingress pattern
+            let ingressMatch = pathname.match(/^(\/api\/hassio_ingress\/[^\/]+)/);
             if (ingressMatch) {
+                console.log('[Management] Detected HA ingress from pathname:', ingressMatch[1]);
+                return ingressMatch[1];
+            }
+            // Old ingress pattern
+            ingressMatch = pathname.match(/^(\/[^\/]+\/ingress)/);
+            if (ingressMatch) {
+                console.log('[Management] Detected old ingress from pathname:', ingressMatch[1]);
                 return ingressMatch[1];
             }
             
             // If pathname is just / or /manage/, no ingress path
             if (pathname === '/' || pathname === '/manage/' || pathname.match(/^\/manage\/?$/)) {
+                console.log('[Management] No ingress path - direct access');
                 return '';
             }
             
@@ -422,9 +441,12 @@ async def management_ui():
             const parts = pathname.split('/').filter(p => p);
             const ingressIndex = parts.indexOf('ingress');
             if (ingressIndex >= 0) {
-                return '/' + parts.slice(0, ingressIndex + 1).join('/');
+                const fallbackPath = '/' + parts.slice(0, ingressIndex + 1).join('/');
+                console.log('[Management] Fallback ingress path:', fallbackPath);
+                return fallbackPath;
             }
             
+            console.log('[Management] No ingress path detected');
             return '';
         }
         
