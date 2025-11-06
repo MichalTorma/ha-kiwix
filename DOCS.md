@@ -27,13 +27,13 @@ enable_management: true
 
 #### Server Configuration
 
-- **port**: Port for the Kiwix server (default: `8111`)
-  - This is the port where Kiwix serves ZIM files
+- **port**: Port for nginx reverse proxy (default: `8111`)
+  - This is the single external port that handles both Kiwix and Management
   - Accessible via Home Assistant ingress and direct network access
-
-- **management_port**: Port for the management API (default: `8112`)
-  - This is the port for the web-based management interface
-  - Use this to download, upload, and manage ZIM files
+  - Routes:
+    - `/wiki/` → Kiwix server
+    - `/manage/` → Management API
+    - `/` → Landing page with tabs
 
 - **zim_storage_path**: Path where ZIM files are stored (default: `/data/zim`)
   - Files stored here will be automatically detected by Kiwix
@@ -100,18 +100,34 @@ Popular ZIM file sources:
 
 ## Accessing Kiwix Content
 
-### Via Home Assistant Ingress
+### Via Home Assistant Ingress (Recommended)
+
+**✅ Fully Functional**: The add-on uses nginx reverse proxy with path rewriting to ensure all features work correctly via ingress.
 
 1. Open Home Assistant
-2. Click on "Kiwix" in the sidebar (if configured)
-3. Kiwix interface will load, but **CSS may not load correctly** due to absolute asset paths
-4. **Recommendation**: Use direct network access for best experience (see below)
+2. Click on "Kiwix" in the sidebar
+3. You'll see a tabbed interface:
+   - **Kiwix Wiki tab**: Browse and search ZIM files
+   - **Management tab**: Download, upload, and manage ZIM files
+4. All features work correctly:
+   - ✅ Full CSS styling
+   - ✅ Working JavaScript
+   - ✅ Complete ZIM file list
+   - ✅ Functional category and language selectors
 
 ### Via Direct Network Access
 
-1. Open a web browser
-2. Navigate to `http://homeassistant-ip:8111`
-3. Kiwix interface will load with all available ZIM files
+**Single Port Access:**
+- **Landing Page**: `http://homeassistant-ip:8111/` - Tabbed interface (same as ingress)
+- **Kiwix Wiki**: `http://homeassistant-ip:8111/wiki/` - Direct Kiwix access
+- **Management**: `http://homeassistant-ip:8111/manage/` - File management
+
+**To find your Home Assistant IP address:**
+- Check your router's device list
+- Or use `http://homeassistant.local:8111` if mDNS is enabled
+- Or check Home Assistant Settings → System → Network
+
+All features work identically via ingress or direct network access.
 
 ### Using ZIM Files
 

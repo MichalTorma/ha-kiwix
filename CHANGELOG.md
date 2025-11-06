@@ -5,6 +5,49 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-01-XX
+
+### Added
+
+- **BREAKING**: Added nginx reverse proxy for proper ingress support
+- Unified interface accessible via single port (8111) with path-based routing
+- Tabbed landing page combining Kiwix Wiki and Management interfaces
+- `/wiki/` path for Kiwix server (with ingress path rewriting for CSS/assets)
+- `/manage/` path for Management API
+- Full ingress support - CSS, JavaScript, and all features now work via sidebar
+- Both services accessible via direct network access or ingress
+
+### Changed
+
+- **BREAKING**: Removed separate `management_port` configuration option
+- Management API now runs on internal port 8081 (proxied via nginx)
+- Kiwix server runs on internal port 8080 (proxied via nginx)
+- Only port 8111 is exposed externally (nginx handles routing)
+- Landing page provides tabbed interface to switch between Wiki and Management
+
+### Fixed
+
+- Fixed CSS and asset loading issues when accessed via Home Assistant ingress
+- Fixed empty selectors issue in Kiwix interface via ingress
+- Proper path rewriting for Kiwix's absolute asset paths
+- All features now work correctly via ingress
+
+### Technical
+
+- Nginx reverse proxy handles path rewriting for ingress compatibility
+- Uses `sub_filter` to rewrite absolute paths in HTML/CSS/JS responses
+- Detects ingress path from `X-Ingress-Path` header
+- Both direct network access and ingress access fully supported
+
+## [1.1.5] - 2025-01-XX
+
+### Documentation
+
+- Enhanced documentation about ingress limitations
+- Clarified that Kiwix via ingress has limited functionality (no CSS, empty selectors)
+- Added clear recommendation to use direct network access for best experience
+- Explained why ingress doesn't work well with Kiwix (absolute asset paths)
+
 ## [1.1.4] - 2025-01-XX
 
 ### Fixed

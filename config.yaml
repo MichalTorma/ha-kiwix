@@ -1,6 +1,6 @@
 name: "Kiwix Server"
 description: "Serve offline Wikipedia and other ZIM files with management interface"
-version: "1.1.4"
+version: "1.2.0"
 slug: "kiwix"
 arch:
   - aarch64
@@ -17,27 +17,23 @@ host_network: false
 privileged: []
 # Port mapping: Exposes container ports to host
 # Format: container_port/tcp: host_port
-# These should match or include the ports configured in options below
+# Only nginx port is exposed - it handles both Kiwix (/wiki/) and Management (/manage/)
 ports:
   8111/tcp: 8111
-  8112/tcp: 8112
 ports_description:
-  8111/tcp: "Kiwix server"
-  8112/tcp: "Management API"
+  8111/tcp: "Nginx reverse proxy (Kiwix + Management)"
 map:
   - config:rw
   - ssl:ro
   - data:rw
 options:
   port: 8111
-  management_port: 8112
   zim_storage_path: "/data/zim"
   log_level: "info"
   max_upload_size: 10000
   enable_management: true
 schema:
   port: "port"
-  management_port: "port"
   zim_storage_path: "str"
   log_level: "list(debug|info|warning|error)"
   max_upload_size: "int(1,)"

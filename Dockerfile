@@ -17,7 +17,8 @@ RUN \
         bash \
         python3 \
         py3-pip \
-        jq
+        jq \
+        nginx
 
 # Install Kiwix tools
 # Try to install from Alpine repos first, fallback to building from source
@@ -66,11 +67,19 @@ RUN \
         python-multipart==0.0.6 \
         aiofiles==23.2.1
 
+# Create nginx directories
+RUN \
+    mkdir -p /var/log/nginx \
+    && mkdir -p /usr/share/nginx/html \
+    && mkdir -p /etc/nginx
+
 # Set permissions
 RUN \
     chown -R kiwix:kiwix /data \
     && chown -R kiwix:kiwix /var/log/kiwix \
     && chown -R kiwix:kiwix /opt/venv \
+    && chown -R nginx:nginx /var/log/nginx \
+    && chown -R nginx:nginx /usr/share/nginx/html \
     && chmod -R g+w /data
 
 # Copy rootfs
@@ -112,7 +121,7 @@ LABEL \
     org.opencontainers.image.version=${BUILD_VERSION}
 
 # Expose ports
-EXPOSE 8111 8112
+EXPOSE 8111
 
 # Set working directory
 WORKDIR /data

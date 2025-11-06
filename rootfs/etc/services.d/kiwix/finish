@@ -1,12 +1,32 @@
 #!/usr/bin/with-contenv bashio
 # ==============================================================================
 # Home Assistant Community Add-on: Kiwix
-# Take care of proper shutdown
+# Shutdown script
 # ==============================================================================
 
-bashio::log.info "Kiwix service finished, shutting down addon..."
+bashio::log.info "Stopping Kiwix services..."
 
-# Clean up management API if it's running
+# Stop nginx
+if [[ -f /tmp/nginx.pid ]]; then
+    NGINX_PID=$(cat /tmp/nginx.pid)
+    if kill -0 ${NGINX_PID} 2>/dev/null; then
+        bashio::log.info "Stopping nginx (PID: ${NGINX_PID})..."
+        kill ${NGINX_PID} 2>/dev/null || true
+    fi
+    rm -f /tmp/nginx.pid
+fi
+
+# Stop Kiwix server if running
+if [[ -f /tmp/kiwix-serve.pid ]]; then
+    KIWIX_PID=$(cat /tmp/kiwix-serve.pid)
+    if kill -0 ${KIWIX_PID} 2>/dev/null; then
+        bashio::log.info "Stopping Kiwix server (PID: ${KIWIX_PID})..."
+        kill ${KIWIX_PID} 2>/dev/null || true
+    fi
+    rm -f /tmp/kiwix-serve.pid
+fi
+
+# Stop management API if running
 if [[ -f /tmp/kiwix-manager.pid ]]; then
     MANAGEMENT_PID=$(cat /tmp/kiwix-manager.pid)
     if kill -0 ${MANAGEMENT_PID} 2>/dev/null; then
@@ -15,4 +35,3 @@ if [[ -f /tmp/kiwix-manager.pid ]]; then
     fi
     rm -f /tmp/kiwix-manager.pid
 fi
-

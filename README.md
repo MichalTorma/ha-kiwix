@@ -35,7 +35,7 @@ Kiwix is an offline reader for web content, designed to make Wikipedia and other
 1. Configure the add-on according to your needs (see Configuration section).
 2. Start the add-on.
 3. Access Kiwix through Home Assistant sidebar (ingress) or directly via `http://homeassistant-ip:8111`.
-4. Access the management interface via `http://homeassistant-ip:8112` to add ZIM files.
+4. Use the Management tab (or `http://homeassistant-ip:8111/manage/`) to add ZIM files.
 
 ### Basic Configuration
 
@@ -43,18 +43,21 @@ The default configuration works out of the box:
 
 ```yaml
 port: 8111
-management_port: 8112
 zim_storage_path: "/data/zim"
 log_level: "info"
 max_upload_size: 10000
 enable_management: true
 ```
 
+**Note**: The `management_port` option has been removed. Both Kiwix and Management are now accessible via the single `port` (8111) using path-based routing:
+- `/wiki/` → Kiwix server
+- `/manage/` → Management API
+
 ### Adding ZIM Files
 
 You can add ZIM files in three ways:
 
-1. **Via Management Interface**: Access `http://homeassistant-ip:8081` and use the web interface
+1. **Via Management Interface**: Access `http://homeassistant-ip:8111/manage/` or use the Management tab in the sidebar
 2. **Download from URL**: Use the management interface to download ZIM files directly
 3. **Upload Files**: Upload ZIM files you've created yourself via the management interface
 
@@ -74,13 +77,25 @@ For detailed configuration options, see the [DOCS.md](DOCS.md) file.
 
 ## Access Methods
 
-- **Home Assistant Ingress**: Access via Home Assistant sidebar (port 8111)
-  - **Note**: Kiwix may show unstyled HTML via ingress due to absolute asset paths
-  - For best experience, use direct network access instead
-- **Direct Network Access**: Access via `http://homeassistant-ip:8111` (port 8111)
-  - Recommended for full functionality and proper CSS styling
-- **Management Interface**: Access via `http://homeassistant-ip:8112` (port 8112)
-  - Always use direct network access (not available via ingress)
+### Via Home Assistant Ingress (Recommended)
+
+Access via Home Assistant sidebar - **fully functional**:
+- ✅ Full CSS styling
+- ✅ Working JavaScript
+- ✅ Complete ZIM file list
+- ✅ Functional selectors
+- ✅ Tabbed interface (Wiki + Management)
+
+The add-on uses nginx reverse proxy with path rewriting to fix ingress compatibility issues.
+
+### Via Direct Network Access
+
+**Single Port Access:**
+- **Landing Page**: `http://homeassistant-ip:8111/` - Tabbed interface
+- **Kiwix Wiki**: `http://homeassistant-ip:8111/wiki/` - Direct Kiwix access
+- **Management**: `http://homeassistant-ip:8111/manage/` - File management
+
+All features work identically via ingress or direct network access.
 
 ## Support
 

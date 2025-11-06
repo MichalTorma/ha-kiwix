@@ -1,21 +1,26 @@
 #!/usr/bin/with-contenv bashio
 # ==============================================================================
 # Home Assistant Community Add-on: Kiwix
-# Runs the Kiwix server and management API
+# Runs the Kiwix server and management API behind nginx reverse proxy
 # ==============================================================================
 
-bashio::log.info "Starting Kiwix server and management API..."
+bashio::log.info "Starting Kiwix server with nginx reverse proxy..."
 
 # Get configuration values
 PORT=$(bashio::config 'port')
-MANAGEMENT_PORT=$(bashio::config 'management_port')
 ZIM_STORAGE_PATH=$(bashio::config 'zim_storage_path')
 ENABLE_MANAGEMENT=$(bashio::config 'enable_management')
 LOG_LEVEL=$(bashio::config 'log_level')
+MAX_UPLOAD_SIZE=$(bashio::config 'max_upload_size')
+
+# Internal ports (not exposed externally)
+KIWIX_INTERNAL_PORT=8080
+MANAGEMENT_INTERNAL_PORT=8081
 
 bashio::log.info "Configuration:"
-bashio::log.info "  Kiwix Server Port: ${PORT}"
-bashio::log.info "  Management API Port: ${MANAGEMENT_PORT}"
+bashio::log.info "  External Port (nginx): ${PORT}"
+bashio::log.info "  Kiwix Internal Port: ${KIWIX_INTERNAL_PORT}"
+bashio::log.info "  Management Internal Port: ${MANAGEMENT_INTERNAL_PORT}"
 bashio::log.info "  ZIM Storage Path: ${ZIM_STORAGE_PATH}"
 bashio::log.info "  Management Enabled: ${ENABLE_MANAGEMENT}"
 bashio::log.info "  Log Level: ${LOG_LEVEL}"
@@ -27,13 +32,12 @@ chmod -R g+w "${ZIM_STORAGE_PATH}"
 
 # Start management API in background if enabled
 if bashio::var.true "${ENABLE_MANAGEMENT}"; then
-    bashio::log.info "Starting management API on port ${MANAGEMENT_PORT}..."
+    bashio::log.info "Starting management API on internal port ${MANAGEMENT_INTERNAL_PORT}..."
     export ZIM_STORAGE_PATH="${ZIM_STORAGE_PATH}"
-    export MAX_UPLOAD_SIZE=$(bashio::config 'max_upload_size')
+    export MAX_UPLOAD_SIZE=${MAX_UPLOAD_SIZE}
     # Start management API - ensure it binds to all interfaces
-    bashio::log.info "Management API will bind to 0.0.0.0:${MANAGEMENT_PORT}"
     nohup /opt/venv/bin/python /usr/local/bin/kiwix-manager.py \
-        --port ${MANAGEMENT_PORT} \
+        --port ${MANAGEMENT_INTERNAL_PORT} \
         --host 0.0.0.0 \
         --storage-path "${ZIM_STORAGE_PATH}" \
         --max-upload-size ${MAX_UPLOAD_SIZE} \
@@ -52,33 +56,12 @@ if bashio::var.true "${ENABLE_MANAGEMENT}"; then
         bashio::log.error "Management API failed to start!"
     else
         # Verify it's responding
-        if curl -f -s http://localhost:${MANAGEMENT_PORT}/api/zim > /dev/null 2>&1; then
-            bashio::log.info "Management API is responding on port ${MANAGEMENT_PORT}"
-            # Get IP address (BusyBox compatible - no Perl regex)
-            HA_IP=$(ip route get 1.1.1.1 2>/dev/null | awk '/src/ {print $7}' || \
-                    ip addr show | grep 'inet ' | grep -v '127.0.0.1' | head -1 | awk '{print $2}' | cut -d/ -f1 || \
-                    echo "homeassistant-ip")
-            bashio::log.info "Management API accessible at: http://${HA_IP}:${MANAGEMENT_PORT}"
-            bashio::log.info "If ports are not accessible, enable them in add-on Network settings"
+        if curl -f -s http://localhost:${MANAGEMENT_INTERNAL_PORT}/api/zim > /dev/null 2>&1; then
+            bashio::log.info "Management API is responding on port ${MANAGEMENT_INTERNAL_PORT}"
         else
             bashio::log.warning "Management API started but not responding yet. It may need more time."
-            bashio::log.warning "Check if port ${MANAGEMENT_PORT} is exposed in config.yaml ports section"
-            bashio::log.warning "Also ensure port ${MANAGEMENT_PORT} is enabled in add-on Network settings"
         fi
     fi
-fi
-
-# Start Kiwix server
-bashio::log.info "Starting Kiwix server on port ${PORT}..."
-bashio::log.info "Kiwix will serve ZIM files from: ${ZIM_STORAGE_PATH}"
-bashio::log.info "Using --library and --monitorLibrary for automatic ZIM file detection"
-
-# Check if ingress is enabled and if we need to handle port mismatch
-INGRESS_PORT=8111
-if [[ "${PORT}" != "${INGRESS_PORT}" ]]; then
-    bashio::log.warning "Kiwix configured on port ${PORT}, but ingress expects port ${INGRESS_PORT}"
-    bashio::log.warning "Ingress will not work. Use direct access: http://homeassistant-ip:${PORT}"
-    bashio::log.warning "Or change port to ${INGRESS_PORT} in configuration for ingress support"
 fi
 
 # Check if there are any ZIM files or create empty library
@@ -101,21 +84,47 @@ fi
 # Change to ZIM storage directory
 cd "${ZIM_STORAGE_PATH}" || bashio::exit.nok "Could not change to ZIM storage directory"
 
-# Check if running via ingress (Home Assistant sets X-Ingress-Path header)
-# Kiwix doesn't natively support ingress path rewriting, so CSS/assets may not load correctly
-# Users should use direct network access for best experience
-INGRESS_ENABLED=$(bashio::config.true 'ingress' 2>/dev/null || echo "false")
+# Start Kiwix server in background
+bashio::log.info "Starting Kiwix server on internal port ${KIWIX_INTERNAL_PORT}..."
+bashio::log.info "Kiwix will serve ZIM files from: ${ZIM_STORAGE_PATH}"
+bashio::log.info "Using --library and --monitorLibrary for automatic ZIM file detection"
 
-# Start Kiwix server with library mode and monitoring
-# --library: Serve multiple ZIM files
-# --monitorLibrary: Automatically detect new/removed ZIM files
-# --address: Bind to all interfaces for ingress and direct access
-# --port: Listen on configured port
-# Note: Kiwix uses absolute paths for assets, which may cause CSS issues with ingress
-# For best experience, use direct network access: http://homeassistant-ip:${PORT}
 if [[ -f "${LIBRARY_XML}" ]]; then
-    exec kiwix-serve --library --monitorLibrary --address 0.0.0.0 --port ${PORT} "${LIBRARY_XML}"
+    nohup kiwix-serve --library --monitorLibrary --address 0.0.0.0 --port ${KIWIX_INTERNAL_PORT} "${LIBRARY_XML}" \
+        > /proc/1/fd/1 2>/proc/1/fd/2 &
 else
-    exec kiwix-serve --library --monitorLibrary --address 0.0.0.0 --port ${PORT} .
+    nohup kiwix-serve --library --monitorLibrary --address 0.0.0.0 --port ${KIWIX_INTERNAL_PORT} . \
+        > /proc/1/fd/1 2>/proc/1/fd/2 &
+fi
+KIWIX_PID=$!
+echo ${KIWIX_PID} > /tmp/kiwix-serve.pid
+bashio::log.info "Kiwix server started with PID ${KIWIX_PID}"
+
+# Wait a moment for Kiwix to start
+sleep 3
+
+# Verify Kiwix is running
+if ! kill -0 ${KIWIX_PID} 2>/dev/null; then
+    bashio::log.error "Kiwix server failed to start!"
+else
+    if curl -f -s http://localhost:${KIWIX_INTERNAL_PORT} > /dev/null 2>&1; then
+        bashio::log.info "Kiwix server is responding on port ${KIWIX_INTERNAL_PORT}"
+    else
+        bashio::log.warning "Kiwix server started but not responding yet. It may need more time."
+    fi
 fi
 
+# Get IP address for logging (BusyBox compatible)
+HA_IP=$(ip route get 1.1.1.1 2>/dev/null | awk '/src/ {print $7}' || \
+        ip addr show | grep 'inet ' | grep -v '127.0.0.1' | head -1 | awk '{print $2}' | cut -d/ -f1 || \
+        echo "homeassistant-ip")
+
+# Start nginx (foreground - this becomes the main process)
+bashio::log.info "Starting nginx reverse proxy on port ${PORT}..."
+bashio::log.info "Access URLs:"
+bashio::log.info "  Landing page: http://${HA_IP}:${PORT}/"
+bashio::log.info "  Kiwix Wiki: http://${HA_IP}:${PORT}/wiki/"
+bashio::log.info "  Management: http://${HA_IP}:${PORT}/manage/"
+bashio::log.info "  Via Ingress: Access via Home Assistant sidebar (with tabbed interface)"
+
+exec nginx -g "daemon off;"
