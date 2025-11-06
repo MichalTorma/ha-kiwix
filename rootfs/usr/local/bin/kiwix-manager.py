@@ -386,7 +386,7 @@ async def management_ui():
                 if (window.parent && window.parent !== window) {
                     const parentPath = window.parent.location.pathname;
                     // Home Assistant ingress pattern: /api/hassio_ingress/<token>
-                    let ingressMatch = parentPath.match(/^(\/api\/hassio_ingress\/[^\/]+)/);
+                    let ingressMatch = parentPath.match(/^(\/api\/hassio_ingress\/[^\\/]+)/);
                     if (ingressMatch) {
                         console.log('[Management] Detected HA ingress from parent:', ingressMatch[1]);
                         return ingressMatch[1];

@@ -34,8 +34,10 @@ Kiwix is an offline reader for web content, designed to make Wikipedia and other
 
 1. Configure the add-on according to your needs (see Configuration section).
 2. Start the add-on.
-3. Access Kiwix through Home Assistant sidebar (ingress) or directly via `http://homeassistant-ip:8111`.
-4. Use the Management tab (or `http://homeassistant-ip:8111/manage/`) to add ZIM files.
+3. Access Kiwix via:
+   - Home Assistant sidebar (ingress) - seamless HA integration
+   - Direct network access: `http://homeassistant-ip:8111/`
+4. Use the Management tab to add ZIM files via download or upload.
 
 ### Basic Configuration
 

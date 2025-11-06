@@ -48,19 +48,31 @@ body_filter_by_lua_block {
 ✅ **Fast**: Single-pass modification at proxy layer
 ✅ **Reliable**: Works for all resources, not just XHR/fetch
 
-### Trade-offs
+### Implementation Details
 
-- Requires `nginx-mod-http-lua` package (added to Dockerfile)
-- Slightly more complex nginx config (but much cleaner overall)
+**Building Lua Modules from Source**:
+- nginx-mod-http-lua is not available in Home Assistant base images
+- Solution: Compile modules during Docker build
+- Downloads ngx_devel_kit and lua-nginx-module from GitHub
+- Builds as dynamic modules matching container's nginx version
+- Installed to `/usr/lib/nginx/modules/`
+- Build dependencies cleaned up after compilation
+
+**Trade-offs**:
+- Slightly longer build time (~2-3 minutes for compilation)
+- Adds ~5MB to image size for LuaJIT runtime
 - Small CPU overhead for Lua pattern matching (negligible)
+- **Benefit**: Clean, deterministic solution with no conditional code
 
 ## Testing
 
-1. Rebuild the add-on (version 1.4.0+)
-2. Access via ingress: `https://your-ha.com/api/hassio_ingress/<token>/`
+1. Rebuild the add-on (version 1.5.0+)
+2. Access via ingress: Click add-on in Home Assistant sidebar
 3. Open DevTools Network tab
 4. Verify assets load from `/api/hassio_ingress/<token>/skin/...` paths
 5. Check that Kiwix displays with proper CSS and functionality
+6. Test navigation, search, and content viewing
+7. Verify direct access (`http://IP:8111/`) also works correctly
 
 ## Why This Is The Right Approach
 

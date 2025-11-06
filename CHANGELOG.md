@@ -5,6 +5,34 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2025-01-XX
+
+### Fixed
+
+- **MAJOR**: Built nginx Lua modules from source - no more conditional code!
+- Fixed boot loop by properly compiling ngx_devel_kit and lua-nginx-module
+- Home Assistant ingress now works correctly with full Kiwix functionality
+- Assets (CSS, JavaScript, images) load correctly in both ingress and direct access
+
+### Changed
+
+- Builds nginx Lua modules from source during Docker build
+- Clean, deterministic build - no conditional/defensive programming
+- Lua-based HTML rewriting always enabled
+
+### Added
+
+- Compiles ngx_devel_kit v0.3.3 from source
+- Compiles lua-nginx-module v0.10.26 from source
+- Added LuaJIT runtime dependency
+
+### Technical Details
+
+- Downloads and compiles nginx modules during build
+- Matches nginx version in container for compatibility
+- Modules installed to `/usr/lib/nginx/modules/`
+- Build dependencies cleaned up after compilation
+
 ## [1.4.0] - 2025-01-XX
 
 ### Fixed
@@ -16,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **BREAKING**: Now requires nginx-mod-http-lua (included in Dockerfile)
+- **BREAKING**: Now requires nginx-mod-http-lua (not available in HA base images)
 - Migrated from nginx sub_filter + JavaScript to nginx + Lua for dynamic content rewriting
 - Uses `body_filter_by_lua_block` to rewrite absolute paths in HTML responses
 - Clean, maintainable solution that properly supports variables in path rewriting
@@ -24,7 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added nginx Lua module support for dynamic HTML modification
+- Added nginx Lua module support for dynamic HTML modification (when available)
 - Proper support for Home Assistant ingress path rewriting at the reverse proxy level
 
 ## [1.3.2] - 2025-01-XX

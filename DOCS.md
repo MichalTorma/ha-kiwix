@@ -10,6 +10,22 @@ A Kiwix server for serving offline Wikipedia and other ZIM files with a built-in
 4. Configure the add-on (see configuration options below).
 5. Start the add-on.
 
+## Access Methods
+
+The add-on can be accessed in two ways:
+
+**Home Assistant Ingress** (Sidebar):
+- Click the add-on in your Home Assistant sidebar
+- Provides seamless integration with HA interface
+- Full functionality with all assets loading correctly
+
+**Direct Network Access**:
+- Access via `http://YOUR_HA_IP:8111/`
+- Useful for devices outside your Home Assistant interface
+- Identical functionality to ingress access
+
+Both methods provide complete Kiwix functionality. The add-on uses server-side HTML rewriting (via nginx + Lua) to ensure all assets load correctly regardless of access method.
+
 ## Configuration
 
 Add-on configuration:
