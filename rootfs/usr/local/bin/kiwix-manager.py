@@ -378,32 +378,73 @@ async def management_ui():
     
     <script>
         // Detect base path (for ingress compatibility)
+        // When accessed via ingress, the iframe's pathname is stripped by the proxy
+        // So we need to get it from the parent window or from postMessage
         function getBasePath() {
-            const pathname = window.location.pathname;
-            // Check if we're in an ingress context by looking for the ingress path pattern
-            // Pattern: /<addon_id>/ingress/manage/ or /<addon_id>/ingress/manage
-            const ingressMatch = pathname.match(/^(\/[^/]+\/ingress)/);
-            if (ingressMatch) {
-                return ingressMatch[1]; // Return /632709b9_kiwix/ingress
+            // First, try to get from parent window (if in iframe)
+            try {
+                if (window.parent && window.parent !== window) {
+                    const parentPath = window.parent.location.pathname;
+                    const ingressMatch = parentPath.match(/^(\/[^\/]+\/ingress)/);
+                    if (ingressMatch) {
+                        return ingressMatch[1];
+                    }
+                }
+            } catch (e) {
+                // Cross-origin restriction - use postMessage or fallback
             }
+            
+            // Check if base path was set via postMessage
+            if (window.__INGRESS_BASE_PATH__) {
+                return window.__INGRESS_BASE_PATH__;
+            }
+            
+            // Listen for postMessage from parent
+            window.addEventListener('message', function(event) {
+                if (event.data && event.data.type === 'ingress-path') {
+                    window.__INGRESS_BASE_PATH__ = event.data.basePath;
+                }
+            });
+            
+            // Fallback: try to detect from current pathname
+            const pathname = window.location.pathname;
+            const ingressMatch = pathname.match(/^(\/[^\/]+\/ingress)/);
+            if (ingressMatch) {
+                return ingressMatch[1];
+            }
+            
             // If pathname is just / or /manage/, no ingress path
             if (pathname === '/' || pathname === '/manage/' || pathname.match(/^\/manage\/?$/)) {
                 return '';
             }
+            
             // Fallback: extract ingress path from pathname
             const parts = pathname.split('/').filter(p => p);
             const ingressIndex = parts.indexOf('ingress');
             if (ingressIndex >= 0) {
                 return '/' + parts.slice(0, ingressIndex + 1).join('/');
             }
+            
             return '';
         }
         
-        const basePath = getBasePath();
-        const apiBase = basePath + '/api';
+        // Wait a bit for postMessage to arrive, then get base path
+        let basePath = '';
+        let apiBase = '/api';
         
-        console.log('Management: Detected base path:', basePath);
-        console.log('Management: API base:', apiBase);
+        function initPaths() {
+            basePath = getBasePath();
+            apiBase = basePath + '/api';
+            console.log('Management: Detected base path:', basePath);
+            console.log('Management: API base:', apiBase);
+        }
+        
+        // Try immediately
+        initPaths();
+        
+        // Also try after a short delay (for postMessage)
+        setTimeout(initPaths, 100);
+        setTimeout(initPaths, 500);
         
         let downloadJobId = null;
         let downloadInterval = null;
@@ -419,6 +460,8 @@ async def management_ui():
         
         async function loadFiles() {
             try {
+                // Ensure apiBase is up to date
+                initPaths();
                 const response = await fetch(apiBase + '/zim');
                 const files = await response.json();
                 const fileList = document.getElementById('fileList');

@@ -104,48 +104,75 @@
         document.getElementById('manageFrame').src = manageSrc;
         
         // Inject path rewriting script into iframes when they load
-        function injectPathRewriter(iframe) {
+        // Use postMessage to pass the base path to iframe content
+        function injectPathRewriter(iframe, iframeType) {
+            // Send base path to iframe via postMessage
             iframe.addEventListener('load', function() {
                 try {
-                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                    if (!iframeDoc) return;
+                    const iframeWindow = iframe.contentWindow;
+                    if (!iframeWindow) return;
                     
-                    // Create a script that rewrites absolute paths
-                    const script = iframeDoc.createElement('script');
-                    script.textContent = `
-                        (function() {
-                            const basePath = '${basePath}';
-                            if (!basePath) return; // No rewriting needed for direct access
-                            
-                            // Rewrite fetch/XHR requests
-                            const originalFetch = window.fetch;
-                            window.fetch = function(url, ...args) {
-                                if (typeof url === 'string' && url.startsWith('/') && !url.startsWith(basePath)) {
-                                    url = basePath + url;
-                                }
-                                return originalFetch.call(this, url, ...args);
-                            };
-                            
-                            // Rewrite XMLHttpRequest
-                            const originalOpen = XMLHttpRequest.prototype.open;
-                            XMLHttpRequest.prototype.open = function(method, url, ...args) {
-                                if (typeof url === 'string' && url.startsWith('/') && !url.startsWith(basePath)) {
-                                    url = basePath + url;
-                                }
-                                return originalOpen.call(this, method, url, ...args);
-                            };
-                        })();
-                    `;
-                    iframeDoc.head.appendChild(script);
+                    // Send the base path to the iframe
+                    iframeWindow.postMessage({
+                        type: 'ingress-path',
+                        basePath: basePath
+                    }, '*');
+                    
+                    // Also try to inject script directly (for same-origin content)
+                    try {
+                        const iframeDoc = iframe.contentDocument || iframeWindow.document;
+                        if (iframeDoc) {
+                            const script = iframeDoc.createElement('script');
+                            script.textContent = `
+                                (function() {
+                                    const basePath = '${basePath}';
+                                    if (!basePath) return;
+                                    
+                                    // Listen for postMessage from parent
+                                    window.addEventListener('message', function(event) {
+                                        if (event.data && event.data.type === 'ingress-path') {
+                                            window.__INGRESS_BASE_PATH__ = event.data.basePath;
+                                        }
+                                    });
+                                    
+                                    // Set initial base path
+                                    window.__INGRESS_BASE_PATH__ = basePath;
+                                    
+                                    // Rewrite fetch/XHR requests
+                                    const originalFetch = window.fetch;
+                                    window.fetch = function(url, ...args) {
+                                        const bp = window.__INGRESS_BASE_PATH__ || '';
+                                        if (typeof url === 'string' && url.startsWith('/') && !url.startsWith(bp)) {
+                                            url = bp + url;
+                                        }
+                                        return originalFetch.call(this, url, ...args);
+                                    };
+                                    
+                                    // Rewrite XMLHttpRequest
+                                    const originalOpen = XMLHttpRequest.prototype.open;
+                                    XMLHttpRequest.prototype.open = function(method, url, ...args) {
+                                        const bp = window.__INGRESS_BASE_PATH__ || '';
+                                        if (typeof url === 'string' && url.startsWith('/') && !url.startsWith(bp)) {
+                                            url = bp + url;
+                                        }
+                                        return originalOpen.call(this, method, url, ...args);
+                                    };
+                                })();
+                            `;
+                            iframeDoc.head.appendChild(script);
+                        }
+                    } catch (e) {
+                        // Cross-origin - use postMessage only
+                        console.log('Direct script injection failed, using postMessage only:', e.message);
+                    }
                 } catch (e) {
-                    // Cross-origin restrictions - this is expected for some content
-                    console.log('Could not inject path rewriter (cross-origin):', e.message);
+                    console.error('Error injecting path rewriter:', e);
                 }
             });
         }
         
-        injectPathRewriter(document.getElementById('wikiFrame'));
-        injectPathRewriter(document.getElementById('manageFrame'));
+        injectPathRewriter(document.getElementById('wikiFrame'), 'wiki');
+        injectPathRewriter(document.getElementById('manageFrame'), 'manage');
         
         function switchTab(tab) {
             // Update tab buttons

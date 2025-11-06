@@ -5,6 +5,16 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.8] - 2025-01-XX
+
+### Fixed
+
+- Fixed ingress path detection in iframe content - now uses parent window location or postMessage
+- Fixed Python SyntaxWarning for invalid escape sequence in regex
+- Improved path rewriting to handle ingress proxy stripping paths
+- Management API now correctly detects ingress path from parent window
+- Added postMessage communication between landing page and iframes for path sharing
+
 ## [1.2.7] - 2025-01-XX
 
 ### Fixed
